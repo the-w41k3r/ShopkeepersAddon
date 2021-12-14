@@ -1,0 +1,254 @@
+package dev.MrFlyn.shopkeeperNavAddon.globalshopgui;
+
+
+import com.nisovin.shopkeepers.SKShopkeepersPlugin;
+import com.nisovin.shopkeepers.api.shopkeeper.Shopkeeper;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+public class ShopGUI {
+    public static void openShopGUI(Player p, MenuType mt)
+    {
+        Inventory inv;
+        switch (mt)
+        {
+            //11,15
+            case MAIN_MENU:
+                ShopInv holder = new ShopInv(MenuType.MAIN_MENU, 27, "§8Main Menu");
+                inv = holder.getInventory();
+                inv.setItem(11, InvUtils.customPlayerHead(
+                        PlayerHeadSkins.PLAYER_SHOP_MAIN_MENU.toString(),
+                        Arrays.asList("Player Shop."),
+                        "Player Shop"
+                ));
+                inv.setItem(13, InvUtils.customPlayerHead(
+                        PlayerHeadSkins.ADMIN_SHOP_MAIN_MENU.toString(),
+                        Arrays.asList("Admin Shop."),
+                        "Admin Shop"
+                ));
+                inv.setItem(15, InvUtils.customPlayerHead(
+                        PlayerHeadSkins.ITEM_SHOP_MAIN_MENU.toString(),
+                        Arrays.asList("Item Shop."),
+                        "Item Shop"
+                ));
+                for (int i =0;i<inv.getSize();i++){
+                    if(inv.getItem(i)==null)
+                        inv.setItem(i,new ItemStack(Material.BLACK_STAINED_GLASS_PANE));
+                }
+                p.openInventory(inv);
+                break;
+            case ITEM_SHOP:
+                ShopInv holder1 = new ShopInv(MenuType.ITEM_SHOP, 54, "§8ITEM SHOP");
+                inv = holder1.getInventory();
+                List<ItemStack> SortedItems = ShopkeeperSorter.getSortedResultItemStacks(p);
+//                SortedItems.sort(new ItemStackComparator());
+
+                    (new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                                holder1.setCachedPageItems(SortedItems);
+                                if (SortedItems.size() <= 36) {
+                                    inv.setItem(51, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+                                } else {
+                                    inv.setItem(51, InvUtils.customPlayerHead(PlayerHeadSkins.NEXT_PAGE.toString(), null, "Next Page"));
+                                }
+                                inv.setItem(47, InvUtils.customPlayerHead(PlayerHeadSkins.PREVIOUS_PAGE.toString(), null, "Main Menu"));
+                                inv.setItem(49, InvUtils.ItemBuilder(Material.PAPER, 1, "Page 1", null));
+                                int c = 0;
+                                for (int i = 0; i < 54; i++) {
+                                    if (i < 9) {
+                                        inv.setItem(i, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+
+                                    } else if (i < 45 && !SortedItems.isEmpty() && c < SortedItems.size()) {
+                                        inv.setItem(i, SortedItems.get(c));
+                                        c++;
+                                    } else if (i > 44) {
+                                        if (inv.getItem(i) == null) {
+                                            inv.setItem(i, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+                                        }
+                                    }
+
+                                }
+                                p.openInventory(inv);
+                        }
+
+                    }).runTask(SKShopkeepersPlugin.getInstance());
+
+                break;
+            case ADMIN_SHOP:
+                ShopInv holder2 = new ShopInv(MenuType.ADMIN_SHOP, 54, "§8ADMIN SHOP");
+                inv = holder2.getInventory();
+                (new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        List<ItemStack> items = ShopkeeperSorter.getVisualRepresentationOfShopkeepers(ShopkeeperSorter.getAllAdminShopkeepers(), p);
+                        holder2.setCachedPageItems(items);
+                        if (items.size() <= 36) {
+                            inv.setItem(51, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+                        } else {
+                            inv.setItem(51, InvUtils.customPlayerHead(PlayerHeadSkins.NEXT_PAGE.toString(), null, "Next Page"));
+                        }
+                        inv.setItem(47, InvUtils.customPlayerHead(PlayerHeadSkins.PREVIOUS_PAGE.toString(), null, "Main Menu"));
+                        inv.setItem(49, InvUtils.ItemBuilder(Material.PAPER, 1, "Page 1", null));
+                        int c = 0;
+                        for (int i = 0; i < 54; i++) {
+                            if (i < 9) {
+                                inv.setItem(i, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+
+                            } else if (i < 45 && !items.isEmpty() && c < items.size()) {
+                                inv.setItem(i, items.get(c));
+                                c++;
+                            } else if (i > 44) {
+                                if (inv.getItem(i) == null) {
+                                    inv.setItem(i, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+                                }
+                            }
+
+                        }
+                        p.openInventory(inv);
+                    }
+                }).runTask(SKShopkeepersPlugin.getInstance());
+                break;
+            case PLAYER_SHOP:
+                ShopInv holder3 = new ShopInv(MenuType.PLAYER_SHOP, 54, "§8PLAYER SHOP");
+                inv = holder3.getInventory();
+                (new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        List<ItemStack> items = ShopkeeperSorter.getSortedVisualsOfStringList(ShopkeeperSorter.getAllShopOwners());
+                        holder3.setCachedPageItems(items);
+                        if (items.size() <= 36) {
+                            inv.setItem(51, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+                        } else {
+                            inv.setItem(51, InvUtils.customPlayerHead(PlayerHeadSkins.NEXT_PAGE.toString(), null, "Next Page"));
+                        }
+                        inv.setItem(47, InvUtils.customPlayerHead(PlayerHeadSkins.PREVIOUS_PAGE.toString(), null, "Main Menu"));
+                        inv.setItem(49, InvUtils.ItemBuilder(Material.PAPER, 1, "Page 1", null));
+                        int c = 0;
+                        for (int i = 0; i < 54; i++) {
+                            if (i < 9) {
+                                inv.setItem(i, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+
+                            } else if (i < 45 && !items.isEmpty() && c < items.size()) {
+                                inv.setItem(i, items.get(c));
+                                c++;
+                            } else if (i > 44) {
+                                if (inv.getItem(i) == null) {
+                                    inv.setItem(i, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+                                }
+                            }
+
+                        }
+                        p.openInventory(inv);
+                    }
+                }).runTask(SKShopkeepersPlugin.getInstance());
+                break;
+
+
+
+
+        }
+    }
+    public static void openShopGUI(Player p, MenuType mt, MenuType previousMenu, ItemStack item)
+    {
+        Inventory inv;
+        switch (mt)
+        {
+            case SHOPKEEPERS:
+                ShopInv holder1 = new ShopInv(MenuType.SHOPKEEPERS, 54, "§8SHOPKEEPERS");
+                holder1.setPreviousMenuType(previousMenu);
+                inv = holder1.getInventory();
+                List<Shopkeeper> shopkeepers = ShopkeeperSorter.getShopkeepersSellingItemStack(item, p);
+                (new BukkitRunnable(){
+                    @Override
+                    public void run() {
+                        List<ItemStack> items = ShopkeeperSorter.getVisualRepresentationOfShopkeepers(shopkeepers, p, item);
+                        holder1.setCachedPageItems(items);
+                        if(items.size()<=36){
+                            inv.setItem(51,new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+                        }
+                        else {
+                            inv.setItem(51, InvUtils.customPlayerHead(PlayerHeadSkins.NEXT_PAGE.toString(), null, "Next Page"));
+                        }
+                        inv.setItem(47, InvUtils.customPlayerHead(PlayerHeadSkins.PREVIOUS_PAGE.toString(), null, previousMenu.toString()));
+                        inv.setItem(49, InvUtils.ItemBuilder(Material.PAPER, 1, "Page 1", null));
+                        int c=0;
+                        for(int i=0;i<54;i++){
+                            if(i<9){
+                                inv.setItem(i,new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+
+                            }
+                            else if(i < 45 && !items.isEmpty() && c < items.size()){
+                                inv.setItem(i, items.get(c));
+                                c++;
+                            }
+                            else if(i>44){
+                                if(inv.getItem(i)==null){
+                                    inv.setItem(i,new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+                                }
+                            }
+
+                        }
+                        p.openInventory(inv);
+                    }
+                }).runTask(SKShopkeepersPlugin.getInstance());
+
+
+        }
+    }
+    public static void openShopGUI(Player p, MenuType mt, MenuType previousMenu, String ownerName)
+    {
+        Inventory inv;
+        switch (mt)
+        {
+            case SHOPKEEPERS:
+                ShopInv holder1 = new ShopInv(MenuType.SHOPKEEPERS, 54, "§8SHOPKEEPERS");
+                holder1.setPreviousMenuType(previousMenu);
+                inv = holder1.getInventory();
+                List<Shopkeeper> shopkeepers = ShopkeeperSorter.getShopkeepersOwnedByPlayer(ownerName);
+                (new BukkitRunnable(){
+                    @Override
+                    public void run() {
+                        List<ItemStack> items = ShopkeeperSorter.getVisualRepresentationOfShopkeepers(shopkeepers, p);
+                        holder1.setCachedPageItems(items);
+                        if(items.size()<=36){
+                            inv.setItem(51,new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+                        }
+                        else {
+                            inv.setItem(51, InvUtils.customPlayerHead(PlayerHeadSkins.NEXT_PAGE.toString(), null, "Next Page"));
+                        }
+                        inv.setItem(47, InvUtils.customPlayerHead(PlayerHeadSkins.PREVIOUS_PAGE.toString(), null, previousMenu.toString()));
+                        inv.setItem(49, InvUtils.ItemBuilder(Material.PAPER, 1, "Page 1", null));
+                        int c=0;
+                        for(int i=0;i<54;i++){
+                            if(i<9){
+                                inv.setItem(i,new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+
+                            }
+                            else if(i < 45 && !items.isEmpty() && c < items.size()){
+                                inv.setItem(i, items.get(c));
+                                c++;
+                            }
+                            else if(i>44){
+                                if(inv.getItem(i)==null){
+                                    inv.setItem(i,new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+                                }
+                            }
+
+                        }
+                        p.openInventory(inv);
+                    }
+                }).runTask(SKShopkeepersPlugin.getInstance());
+
+
+        }
+    }
+}

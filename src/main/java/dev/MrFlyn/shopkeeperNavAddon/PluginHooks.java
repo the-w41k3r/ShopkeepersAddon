@@ -1,0 +1,41 @@
+package dev.MrFlyn.shopkeeperNavAddon;
+
+import com.plotsquared.core.PlotAPI;
+import com.plotsquared.core.player.PlotPlayer;
+import com.plotsquared.core.plot.Plot;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.CuboidRegion;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
+
+public class PluginHooks {
+    public PluginHooks(){
+
+    }
+   public void teleportPlayerPlotSquared(Player p, Location loc){
+        try {
+            PlotAPI api = new PlotAPI();
+            PlotPlayer pP = api.wrapPlayer(p.getUniqueId());
+            BlockVector3 Bv3 = BukkitAdapter.asBlockVector(loc);
+            for (Plot plot : api.getAllPlots()) {
+                for (CuboidRegion r : plot.getRegions()) {
+                    if (r.contains(Bv3)) {
+                        plot.teleportPlayer(pP, (cn) -> {
+                        });
+                        return;
+                    }
+                }
+            }
+            p.closeInventory();
+            p.sendMessage("§aUnable to find plot. Teleporting to Entity instead.");
+            p.teleport(loc);
+        }
+        catch (Exception e){
+            p.closeInventory();
+            p.sendMessage("§aUnable to find plot. Teleporting to Entity instead.");
+            p.teleport(loc);
+        }
+
+   }
+}

@@ -1,0 +1,21 @@
+name: ShopkeepersNavAddon
+version: '1.0'
+description: hehe boi
+authors: [MrFlyn]
+depend:
+  - Shopkeepers
+softdepend:
+  - PlotSquared
+main: dev.MrFlyn.shopkeeperNavAddon.Main
+api-version: '1.14'
+
+commands:
+  shop:
+    description: test
+    usage: 'tit'
+
+permissions:
+  # Command permissions:
+  SNA.command.shop:
+    description: shop
+    default: true
