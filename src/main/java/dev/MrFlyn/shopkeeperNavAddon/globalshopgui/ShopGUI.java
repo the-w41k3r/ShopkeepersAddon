@@ -26,17 +26,17 @@ public class ShopGUI {
                 inv = holder.getInventory();
                 inv.setItem(11, InvUtils.customPlayerHead(
                         PlayerHeadSkins.PLAYER_SHOP_MAIN_MENU.toString(),
-                        Arrays.asList("Player Shop."),
+                        Arrays.asList(""),
                         "Player Shop"
                 ));
                 inv.setItem(13, InvUtils.customPlayerHead(
                         PlayerHeadSkins.ADMIN_SHOP_MAIN_MENU.toString(),
-                        Arrays.asList("Admin Shop."),
+                        Arrays.asList(""),
                         "Admin Shop"
                 ));
                 inv.setItem(15, InvUtils.customPlayerHead(
                         PlayerHeadSkins.ITEM_SHOP_MAIN_MENU.toString(),
-                        Arrays.asList("Item Shop."),
+                        Arrays.asList(""),
                         "Item Shop"
                 ));
                 for (int i =0;i<inv.getSize();i++){
