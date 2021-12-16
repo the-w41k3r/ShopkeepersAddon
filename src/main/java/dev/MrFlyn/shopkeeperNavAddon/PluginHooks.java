@@ -28,13 +28,24 @@ public class PluginHooks {
                 }
             }
             p.closeInventory();
-            p.sendMessage("§aUnable to find plot. Teleporting to Entity instead.");
-            p.teleport(loc);
+            if(Main.plugin.isSafeLocation(loc)) {
+                p.sendMessage("§aUnable to find plot. Teleporting to Entity instead.");
+                p.teleport(loc);
+            }
+            else {
+                p.sendMessage("§cUnsafe location detected. Cancelling teleport...");
+            }
         }
         catch (Exception e){
             p.closeInventory();
-            p.sendMessage("§aUnable to find plot. Teleporting to Entity instead.");
-            p.teleport(loc);
+            if(Main.plugin.isSafeLocation(loc)) {
+                p.sendMessage("§aUnable to find plot. Teleporting to Entity instead.");
+                p.teleport(loc);
+            }
+            else {
+                p.sendMessage("§cUnsafe location detected. Cancelling teleport...");
+            }
+
         }
 
    }

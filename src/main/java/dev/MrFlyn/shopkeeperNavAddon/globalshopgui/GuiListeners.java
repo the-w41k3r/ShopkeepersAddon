@@ -204,17 +204,27 @@ public class GuiListeners implements Listener {
                             String locString = tagContainer.getCustomTag(key, ItemTagType.STRING);
                             Location loc = new Location(Bukkit.getWorld(locString.split(" ")[0]), Double.parseDouble(locString.split(" ")[1]),
                                     Double.parseDouble(locString.split(" ")[2]), Double.parseDouble(locString.split(" ")[3]));
-                            if(Main.plugin.hooks==null){
-                                e.getWhoClicked().teleport(loc);
-                            }
-                            else {
-                                (new BukkitRunnable(){
-                                    @Override
-                                    public void run() {
-
-                                            Main.plugin.hooks.teleportPlayerPlotSquared((Player) e.getWhoClicked(), loc);
+                            if (Main.plugin.getConfig().getBoolean("AllowTeleportToShopkeepers")) {
+                                if (e.getWhoClicked().hasPermission("SNA.teleport")) {
+                                    if (Main.plugin.hooks == null) {
+                                        if (Main.plugin.isSafeLocation(loc)) {
+                                            e.getWhoClicked().teleport(loc);
+                                        } else {
+                                            e.getWhoClicked().sendMessage("§cUnsafe location detected. Cancelling teleport...");
+                                        }
+                                        e.getWhoClicked().closeInventory();
+                                    } else {
+                                        (new BukkitRunnable() {
+                                            @Override
+                                            public void run() {
+                                                Main.plugin.hooks.teleportPlayerPlotSquared((Player) e.getWhoClicked(), loc);
+                                            }
+                                        }).runTask(Main.plugin);
                                     }
-                                }).runTask(Main.plugin);
+                                } else {
+                                    e.getWhoClicked().closeInventory();
+                                    e.getWhoClicked().sendMessage("§cYou do not have the permission to teleport.");
+                                }
                             }
                         }
                     }
@@ -252,15 +262,27 @@ public class GuiListeners implements Listener {
                             String locString = tagContainer.getCustomTag(key, ItemTagType.STRING);
                             Location loc = new Location(Bukkit.getWorld(locString.split(" ")[0]), Double.parseDouble(locString.split(" ")[1]),
                                     Double.parseDouble(locString.split(" ")[2]), Double.parseDouble(locString.split(" ")[3]));
-                            if (Main.plugin.hooks == null) {
-                                e.getWhoClicked().teleport(loc);
-                            } else {
-                                (new BukkitRunnable() {
-                                    @Override
-                                    public void run() {
-                                        Main.plugin.hooks.teleportPlayerPlotSquared((Player) e.getWhoClicked(), loc);
+                            if (Main.plugin.getConfig().getBoolean("AllowTeleportToShopkeepers")) {
+                                if (e.getWhoClicked().hasPermission("SNA.teleport")) {
+                                    if (Main.plugin.hooks == null) {
+                                        if (Main.plugin.isSafeLocation(loc)) {
+                                            e.getWhoClicked().teleport(loc);
+                                        } else {
+                                            e.getWhoClicked().sendMessage("§cUnsafe location detected. Cancelling teleport...");
+                                        }
+                                        e.getWhoClicked().closeInventory();
+                                    } else {
+                                        (new BukkitRunnable() {
+                                            @Override
+                                            public void run() {
+                                                Main.plugin.hooks.teleportPlayerPlotSquared((Player) e.getWhoClicked(), loc);
+                                            }
+                                        }).runTask(Main.plugin);
                                     }
-                                }).runTask(Main.plugin);
+                                } else {
+                                    e.getWhoClicked().closeInventory();
+                                    e.getWhoClicked().sendMessage("§cYou do not have the permission to teleport.");
+                                }
                             }
                         }
                     }
