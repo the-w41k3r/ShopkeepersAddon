@@ -48,6 +48,7 @@ public class GuiListeners implements Listener {
     public void onInventoryClick(InventoryClickEvent e){
         if(e.getClickedInventory() == null)
         {
+
             return;
         }
         if(e.getClickedInventory().getHolder() == null)
@@ -210,7 +211,8 @@ public class GuiListeners implements Listener {
                                 (new BukkitRunnable(){
                                     @Override
                                     public void run() {
-                                        Main.plugin.hooks.teleportPlayerPlotSquared((Player) e.getWhoClicked(), loc);
+
+                                            Main.plugin.hooks.teleportPlayerPlotSquared((Player) e.getWhoClicked(), loc);
                                     }
                                 }).runTask(Main.plugin);
                             }

@@ -1,6 +1,6 @@
 name: ShopkeepersNavAddon
 version: '1.0'
-description: hehe boi
+description: i dont know what to put here
 authors: [MrFlyn]
 depend:
   - Shopkeepers
@@ -10,12 +10,12 @@ main: dev.MrFlyn.shopkeeperNavAddon.Main
 api-version: '1.14'
 
 commands:
-  shop:
-    description: test
-    usage: 'tit'
+  shops:
+    description: shop
+    usage: '/<command>'
 
 permissions:
   # Command permissions:
-  SNA.command.shop:
-    description: shop
-    default: true
+  SNA.command.shops:
+    description: shops
+    default: op

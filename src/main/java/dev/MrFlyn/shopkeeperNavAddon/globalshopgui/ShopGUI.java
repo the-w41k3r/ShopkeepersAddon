@@ -39,9 +39,9 @@ public class ShopGUI {
                         Arrays.asList(""),
                         "Item Shop"
                 ));
-                for (int i =0;i<inv.getSize();i++){
+                for (int i=0 ;i<inv.getSize() ;i++){
                     if(inv.getItem(i)==null)
-                        inv.setItem(i,new ItemStack(Material.BLACK_STAINED_GLASS_PANE));
+                        inv.setItem(i,new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
                 }
                 p.openInventory(inv);
                 break;

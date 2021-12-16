@@ -22,7 +22,7 @@ public class Main extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new GuiListeners(),this);
         keeperHeads = Arrays.asList(PlayerHeadSkins.SHOPKEEPER_1.toString(), PlayerHeadSkins.SHOPKEEPER_2.toString(), PlayerHeadSkins.SHOPKEEPER_3.toString(),
                 PlayerHeadSkins.SHOPKEEPER_4.toString(), PlayerHeadSkins.SHOPKEEPER_5.toString());
-        getCommand("shop").setExecutor(new Commands());
+        getCommand("shops").setExecutor(new Commands());
         if(Bukkit.getPluginManager().getPlugin("PlotSquared")!=null){
             hooks = new PluginHooks();
         }
