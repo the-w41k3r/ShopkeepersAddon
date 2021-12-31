@@ -1,0 +1,16 @@
+Supply-Chest-Is-Full: '§cNo space left in the supplies.'
+Owner-Add-Money: '§a+ [amount]'
+Owner-Subtract-Money: '§a- [amount]'
+Shop-Out-Of-Money: '§cThis shop is out of money.'
+Player-Out-Of-Money: '§cYou dont have enough money to buy the item.'
+Shop-Out-Of-Stock: '§cOut of Stock.'
+Invalid-Price-Input: '§cYour trade setup was cancelled due to invalid price input.'
+Price-Limit-Reached: '§cYour trade setup was cancelled due to invalid price input. Highest price limit is [maxPrice]'
+Price-Set-Successfully: '§aItem price successfully set.'
+Price-Input-Request: '§aEnter the price of the item. Type cancel to cancel the setup.'
+Trade-Setup-Cancel: '§cYour trade setup was cancelled.'
+Currency-Item:
+  Name-Format: 'Price [amount]'
+  Material: 'PAPER'
+  Lore:
+    - '§bClick to edit'

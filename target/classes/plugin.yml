@@ -1,0 +1,34 @@
+name: ShopkeepersAddon
+version: '2.0'
+description: i dont know what to put here
+authors: [MrFlyn]
+depend:
+  - Shopkeepers
+softdepend:
+  - PlotSquared
+  - ProtocolLib
+  - Vault
+main: dev.MrFlyn.shopkeeperNavAddon.Main
+api-version: '1.14'
+
+commands:
+  shops:
+    description: shop
+    usage: '/<command>'
+  sna:
+    description: parent command
+    usage: '/<command> []'
+
+permissions:
+  SNA.command.shops:
+    description: allows /shops or /sna shops command
+    default: op
+  SNA.teleport:
+    description: teleport on click
+    default: op
+  SNA.command.help:
+    description: show /sna help message.
+    default: op
+  SNA.admin:
+    description: allows /sna reload command.
+    default: op
