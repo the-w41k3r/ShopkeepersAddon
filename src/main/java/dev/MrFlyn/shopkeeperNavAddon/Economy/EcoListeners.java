@@ -18,6 +18,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -109,6 +110,35 @@ public class EcoListeners implements Listener {
         }
 
     }
+    @EventHandler
+    public void onUIOpen(PlayerOpenUIEvent e){
+        if(e.getUIType() != TradingUIType.INSTANCE)
+            return;
+        if(!Main.plugin.getConfig().getBoolean("EconomyHook.Geyser-Compat.Enabled")){
+            return;
+        }
+        Player p = e.getPlayer();
+        (new BukkitRunnable(){
+            @Override
+            public void run() {
+                if(p.getName().indexOf(Main.plugin.getConfig().getString("EconomyHook.Geyser-Compat.Name-Prefix"))==0){
+                    if(!p.getInventory().addItem(InvUtils.ItemBuilder(Material.valueOf(
+                                    Main.plugin.messages.getString("Currency-Item.Material")), 1,
+                            Main.plugin.messages.getString("Currency-Item.Name-Format").replace("[amount]",
+                                    Main.plugin.vaultHook.formattedMoney(0.0)),
+                            Main.plugin.messages.getStringList("Currency-Item.Lore"),
+                            "GeyserCompat", 0.0)).isEmpty()){
+                        p.closeInventory();
+                        p.sendMessage(Main.plugin.messages.getString("Player-Inventory-Full"));
+                        return;
+                    }
+                    p.updateInventory();
+                }
+            }
+        }).runTaskLater(Main.plugin, 2L);
+
+
+    }
     //detect click on the trade sidebar
     @EventHandler
     public void onTradeSelect(TradeSelectEvent e){
@@ -134,10 +164,17 @@ public class EcoListeners implements Listener {
 
     }
     @EventHandler
+    public void onDrop(PlayerDropItemEvent e){
+        if(InvUtils.hasPersistentData("GeyserCompat", e.getItemDrop().getItemStack(), PersistentDataType.DOUBLE)){
+            e.setCancelled(true);
+        }
+    }
+    @EventHandler
     public void onInvOpen(InventoryOpenEvent e){
        PlayerInventory inv = e.getPlayer().getInventory();
        for(ItemStack item : inv){
-           if(InvUtils.hasPersistentData("ItemPrice", item, PersistentDataType.DOUBLE))
+           if(InvUtils.hasPersistentData("ItemPrice", item, PersistentDataType.DOUBLE)||
+                   InvUtils.hasPersistentData("GeyserCompat", item, PersistentDataType.DOUBLE))
                item.setAmount(0);
        }
         ((Player) e.getPlayer()).updateInventory();
@@ -153,7 +190,8 @@ public class EcoListeners implements Listener {
             public void run() {
                 PlayerInventory inv = p.getInventory();
                 for (ItemStack item : inv) {
-                    if (InvUtils.hasPersistentData("ItemPrice", item, PersistentDataType.DOUBLE))
+                    if (InvUtils.hasPersistentData("ItemPrice", item, PersistentDataType.DOUBLE)||
+                            InvUtils.hasPersistentData("GeyserCompat", item, PersistentDataType.DOUBLE))
                         item.setAmount(0);
                 }
                 p.updateInventory();

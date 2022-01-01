@@ -149,6 +149,9 @@ public class EcoHandler {
             return;
         if(!(e.getClickedInventory() instanceof MerchantInventory))
             return;
+        MerchantInventory merchantInv = (MerchantInventory) e.getView().getTopInventory();
+        if(merchantInv.getSelectedRecipe()==null)
+            return;
         if(ShopkeepersAPI.getUIRegistry().getUISession((Player) e.getWhoClicked())==null)
             return;
         if(ShopkeepersAPI.getUIRegistry().getUISession((Player) e.getWhoClicked()).getUIType() != TradingUIType.INSTANCE)
@@ -156,7 +159,12 @@ public class EcoHandler {
         if(e.getSlot()!=2)
             return;
         Player p = (Player) e.getWhoClicked();
-        MerchantInventory merchantInv = (MerchantInventory) e.getView().getTopInventory();
+        if(p.getInventory().firstEmpty()==-1){
+            p.sendMessage(Main.plugin.messages.getString("Player-Inventory-Full"));
+            p.closeInventory();
+            return;
+        }
+
         if(merchantInv.getSelectedRecipe() == null)
             return;
         ItemStack item1 = e.getClickedInventory().getItem(0);
@@ -192,10 +200,6 @@ public class EcoHandler {
 
                 }
             }
-//            if(p.getInventory().firstEmpty()==-1){
-//                p.sendMessage("§cYou dont have free space in your inventory.");
-//                return;
-//            }
             double price = InvUtils.getPersistentDataPrice(item1);
             if(!Main.plugin.vaultHook.hasMoney(p.getName(), price)) {
                 p.closeInventory();

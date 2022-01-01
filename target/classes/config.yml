@@ -9,3 +9,8 @@ EconomyHook:
   BlockItemBasedTrades: false
   #Set the price limit for trades.
   SellingPriceLimit: 100000000000000.00
+  #Enable this if bedrock players play in you server(Geyser plugin)
+  #Note: you need to have a prefix before the bedrock player's name for this to work(you need to have FloodGate Installed to change bedrock prefix).
+  Geyser-Compat:
+    Enabled: false
+    Name-Prefix: 'B_'

@@ -9,6 +9,7 @@ Price-Limit-Reached: '§cYour trade setup was cancelled due to invalid price inp
 Price-Set-Successfully: '§aItem price successfully set.'
 Price-Input-Request: '§aEnter the price of the item. Type cancel to cancel the setup.'
 Trade-Setup-Cancel: '§cYour trade setup was cancelled.'
+Player-Inventory-Full: '§cYour inventory is full please clear it before purchasing.'
 Currency-Item:
   Name-Format: 'Price [amount]'
   Material: 'PAPER'
