@@ -146,7 +146,7 @@ public class EcoListeners implements Listener {
             return;
         Player p = (Player) e.getWhoClicked();
         if (ShopkeepersAPI.getUIRegistry().getUISession(p).getUIType() == TradingUIType.INSTANCE) {
-                        e.setCancelled(true);
+//                        e.setCancelled(true);
             for(ItemStack item : e.getView().getTopInventory()){
                 if(InvUtils.hasPersistentData("ItemPrice", item, PersistentDataType.DOUBLE)){
 //                    e.getView().getTopInventory().setItem(0, null);
@@ -154,6 +154,7 @@ public class EcoListeners implements Listener {
                     p.updateInventory();
                 }
             }
+//            System.out.println("TRADE SELECT");
             (new BukkitRunnable() {
                 @Override
                 public void run() {
