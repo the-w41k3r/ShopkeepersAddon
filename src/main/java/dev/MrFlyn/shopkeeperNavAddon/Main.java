@@ -64,6 +64,8 @@ public class Main extends JavaPlugin {
         keeperHeads = Arrays.asList(PlayerHeadSkins.SHOPKEEPER_1.toString(), PlayerHeadSkins.SHOPKEEPER_2.toString(), PlayerHeadSkins.SHOPKEEPER_3.toString(),
                 PlayerHeadSkins.SHOPKEEPER_4.toString(), PlayerHeadSkins.SHOPKEEPER_5.toString());
         getCommand("shops").setExecutor(new Commands());
+        getCommand("shop").setExecutor(new Commands());
+        getCommand("playershops").setExecutor(new Commands());
         getCommand("sna").setExecutor(new Commands());
         getCommand("sna").setTabCompleter(new TabComplete());
         if(Bukkit.getPluginManager().getPlugin("PlotSquared")!=null){

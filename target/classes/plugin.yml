@@ -1,5 +1,5 @@
 name: ShopkeepersAddon
-version: '2.2'
+version: '2.3'
 description: i dont know what to put here
 authors: [MrFlyn]
 depend:
@@ -15,6 +15,12 @@ commands:
   shops:
     description: shop
     usage: '/<command>'
+  playershops:
+    description: shop gui withoud admin shop icon
+    usage: '/<command>'
+  shop:
+    description: opens admin shops gui with remote access
+    usage: '/<command>'
   sna:
     description: parent command
     usage: '/<command> []'
@@ -22,6 +28,12 @@ commands:
 permissions:
   SNA.command.shops:
     description: allows /shops or /sna shops command
+    default: op
+  SNA.command.shop:
+    description: allows /shop or /sna shop command
+    default: op
+  SNA.command.playershops:
+    description: allows /playershops or /sna playershops command
     default: op
   SNA.teleport:
     description: teleport on click

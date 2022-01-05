@@ -17,6 +17,8 @@ public class TabComplete implements TabCompleter {
         {
             library.add("help");
             library.add("shops");
+            library.add("playershops");
+            library.add("shop");
             library.add("reload");
         }
         List<String> result = new ArrayList<String>();

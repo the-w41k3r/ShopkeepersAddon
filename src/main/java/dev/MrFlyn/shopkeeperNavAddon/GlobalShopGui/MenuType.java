@@ -4,8 +4,10 @@ public enum MenuType {
     MAIN_MENU("Main Menu"),
     PLAYER_SHOP("Player Shop"),
     ADMIN_SHOP("Admin Shop"),
+    REMOTE_ADMIN_SHOP("Remote Admin Shop"),
     ITEM_SHOP("Item Shop"),
-    SHOPKEEPERS("Shopkeepers");
+    SHOPKEEPERS("Shopkeepers"),
+    PLAYER_SHOPS("Player Shops");
     private final String text;
 
     MenuType(final String text) {

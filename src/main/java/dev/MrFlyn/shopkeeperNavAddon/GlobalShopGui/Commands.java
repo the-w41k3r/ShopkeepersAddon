@@ -23,10 +23,35 @@ public class Commands implements CommandExecutor {
                 return true;
             }
             Player p = (Player) sender;
-
             ShopGUI.openShopGUI(p, MenuType.MAIN_MENU);
-
-
+            return true;
+        }
+        else if(cmd.getName().equalsIgnoreCase("playershops")){
+            if(!sender.hasPermission("SNA.command.playershops")){
+                sender.sendMessage("§cYou do not have the required permission execute the command.");
+                return true;
+            }
+            if(!(sender instanceof Player))
+            {
+                sender.sendMessage("§cConsole cannot execute this command.");
+                return true;
+            }
+            Player p = (Player) sender;
+            ShopGUI.openShopGUI(p, MenuType.PLAYER_SHOPS);
+            return true;
+        }
+        else if(cmd.getName().equalsIgnoreCase("shop")){
+            if(!sender.hasPermission("SNA.command.shop")){
+                sender.sendMessage("§cYou do not have the required permission execute the command.");
+                return true;
+            }
+            if(!(sender instanceof Player))
+            {
+                sender.sendMessage("§cConsole cannot execute this command.");
+                return true;
+            }
+            Player p = (Player) sender;
+            ShopGUI.openShopGUI(p, MenuType.REMOTE_ADMIN_SHOP);
             return true;
         }
         else if(cmd.getName().equalsIgnoreCase("sna")){
@@ -37,7 +62,8 @@ public class Commands implements CommandExecutor {
             switch (args[0]){
                 case "help":
                     if(sender.hasPermission("SNA.command.help")) {
-                        sender.sendMessage("§aShopkeepersNavigationAddon\nAvailableCommands:\n/shops\n/sna reload\n/sna help");
+                        sender.sendMessage("§aShopkeepersNavigationAddon\nAvailableCommands:\n/shops\n/playershops\n/shop\n/sna reload\n/sna help" +
+                                "\n/sna shops\n/sna shop\n/sna playershops");
                         return true;
                     }
                     else {
@@ -65,7 +91,32 @@ public class Commands implements CommandExecutor {
                     Player p = (Player) sender;
                     ShopGUI.openShopGUI(p, MenuType.MAIN_MENU);
                     break;
-
+                case "shop":
+                    if(!sender.hasPermission("SNA.command.shop")){
+                        sender.sendMessage("§cYou do not have the required permission execute the command.");
+                        return true;
+                    }
+                    if(!(sender instanceof Player))
+                    {
+                        sender.sendMessage("§cConsole cannot execute this command.");
+                        return true;
+                    }
+                    Player p1 = (Player) sender;
+                    ShopGUI.openShopGUI(p1, MenuType.REMOTE_ADMIN_SHOP);
+                    break;
+                case "playershops":
+                    if(!sender.hasPermission("SNA.command.playershops")){
+                        sender.sendMessage("§cYou do not have the required permission execute the command.");
+                        return true;
+                    }
+                    if(!(sender instanceof Player))
+                    {
+                        sender.sendMessage("§cConsole cannot execute this command.");
+                        return true;
+                    }
+                    Player p2 = (Player) sender;
+                    ShopGUI.openShopGUI(p2, MenuType.PLAYER_SHOPS);
+                    break;
             }
         }
         return true;

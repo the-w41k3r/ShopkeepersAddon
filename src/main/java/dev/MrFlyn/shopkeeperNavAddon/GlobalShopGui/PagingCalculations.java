@@ -13,6 +13,7 @@ public class PagingCalculations {
     //calculates from page2 onwards
     public static void nextPage(Inventory inv, Player p, MenuType mt){
         switch (mt){
+            case REMOTE_ADMIN_SHOP:
             case PLAYER_SHOP:
             case ADMIN_SHOP:
             case SHOPKEEPERS:
@@ -38,7 +39,8 @@ public class PagingCalculations {
                       inv.setItem(i+9,new ItemStack(Material.BARRIER, 0));
 
                 }
-            break;
+                break;
+
         }
 
     }
@@ -71,6 +73,34 @@ public class PagingCalculations {
                 for(int i = 0; i<36; i++){
                     if(i<pageItems.size())
                         inv.setItem(i+9,pageItems.get(i));
+                    else
+                        inv.setItem(i+9,new ItemStack(Material.BARRIER, 0));
+
+                }
+                break;
+            case REMOTE_ADMIN_SHOP:
+                ItemStack page1 = inv.getItem(49);
+                int pageNumber1 = Integer.parseInt(page1.getItemMeta().getDisplayName().split(" ")[1]);
+                inv.setItem(49, InvUtils.ItemBuilder(Material.PAPER, page1.getAmount()-1,
+                        "Page "+ (pageNumber1-1), null));
+                ShopInv holder1 = (ShopInv)inv.getHolder();
+                List<ItemStack> cachedItems1 = holder1.getCachedPageItems();
+                List<ItemStack> pageItems1 = cachedItems1.subList((pageNumber1-2)*36, cachedItems1.size()-1);
+                if(pageItems1.size()<=36){
+                    inv.setItem(51,new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+                }
+                else {
+                    inv.setItem(51, InvUtils.customPlayerHead(PlayerHeadSkins.NEXT_PAGE.toString(), null, "Next Page"));
+                }
+                if((pageNumber1-2)*36==0) {
+                    inv.setItem(47,new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+                }
+                else {
+                    inv.setItem(47, InvUtils.customPlayerHead(PlayerHeadSkins.PREVIOUS_PAGE.toString(), null, "Previous Page"));
+                }
+                for(int i = 0; i<36; i++){
+                    if(i<pageItems1.size())
+                        inv.setItem(i+9,pageItems1.get(i));
                     else
                         inv.setItem(i+9,new ItemStack(Material.BARRIER, 0));
 

@@ -1,6 +1,7 @@
 package dev.MrFlyn.shopkeeperNavAddon.GlobalShopGui;
 
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
+import com.nisovin.shopkeepers.api.ShopkeepersAPI;
 import com.nisovin.shopkeepers.api.events.ShopkeeperEditedEvent;
 import com.nisovin.shopkeepers.api.events.ShopkeeperRemoveEvent;
 import dev.MrFlyn.shopkeeperNavAddon.Main;
@@ -286,6 +287,45 @@ public class GuiListeners implements Listener {
                                 }
                             }
                         }
+                    }
+                    break;
+                case REMOTE_ADMIN_SHOP:
+                    if (e.getSlot() == 51) {
+                        if (e.getCurrentItem().getType() == Material.PLAYER_HEAD) {
+                            (new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    PagingCalculations.nextPage(e.getClickedInventory(), (Player) e.getWhoClicked(), MenuType.REMOTE_ADMIN_SHOP);
+                                }
+                            }).runTask(SKShopkeepersPlugin.getInstance());
+                        }
+                    } else if (e.getSlot() == 47) {
+                        if (e.getCurrentItem().getType() == Material.PLAYER_HEAD) {
+                            if (e.getCurrentItem().getItemMeta().getDisplayName().equals("Main Menu")) {
+                                ShopGUI.openShopGUI((Player) e.getWhoClicked(), MenuType.MAIN_MENU);
+                                return;
+                            }
+                            (new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    PagingCalculations.previousPage(e.getClickedInventory(), (Player) e.getWhoClicked(), MenuType.REMOTE_ADMIN_SHOP);
+                                }
+                            }).runTask(SKShopkeepersPlugin.getInstance());
+                        }
+                    } else {
+                        NamespacedKey key = new NamespacedKey(Main.plugin, "shopLocation");
+                        ItemMeta itemMeta = e.getCurrentItem().getItemMeta();
+                        PersistentDataContainer tagContainer = itemMeta.getPersistentDataContainer();
+
+                        if (tagContainer.has(key, PersistentDataType.STRING)) {
+                            String locString = tagContainer.get(key, PersistentDataType.STRING);
+                            Location loc = new Location(Bukkit.getWorld(locString.split(" ")[0]), Double.parseDouble(locString.split(" ")[1]),
+                                    Double.parseDouble(locString.split(" ")[2]), Double.parseDouble(locString.split(" ")[3]));
+                            int id = Integer.parseInt(locString.split(" ")[4]);
+                            //getShopkeeper lol
+                            ShopkeepersAPI.getShopkeeperRegistry().getShopkeeperById(id).openTradingWindow((Player) e.getWhoClicked());
+                        }
+
                     }
                     break;
 

@@ -199,7 +199,7 @@ public class ShopkeeperSorter {
             ItemMeta itemMeta = stack.getItemMeta();
             itemMeta.getPersistentDataContainer().set(key, PersistentDataType.STRING, keeper.getLocation().getWorld().getName() + " " +
                     keeper.getLocation().getBlockX() + " " + keeper.getLocation().getBlockY()
-                    + " " + keeper.getLocation().getBlockZ());
+                    + " " + keeper.getLocation().getBlockZ()+ " " + keeper.getId());
             stack.setItemMeta(itemMeta);
             visualRepresentation.put(keeper, stack);
             Collections.shuffle(Main.plugin.keeperHeads);
