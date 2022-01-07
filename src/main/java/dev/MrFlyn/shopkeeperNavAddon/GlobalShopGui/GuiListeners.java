@@ -12,6 +12,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -60,6 +61,9 @@ public class GuiListeners implements Listener {
         if(e.getCurrentItem() == null)
         {
             return;
+        }
+        if(e.getView().getTopInventory().getHolder() instanceof ShopInv) {
+            e.setCancelled(true);
         }
         if(e.getClickedInventory().getHolder() instanceof ShopInv){
             ShopInv holder = (ShopInv) e.getClickedInventory().getHolder();
