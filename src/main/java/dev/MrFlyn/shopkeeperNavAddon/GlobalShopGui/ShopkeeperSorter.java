@@ -7,6 +7,7 @@ import com.nisovin.shopkeepers.api.shopkeeper.admin.AdminShopType;
 import com.nisovin.shopkeepers.api.shopkeeper.player.PlayerShopkeeper;
 import dev.MrFlyn.shopkeeperNavAddon.InvUtils;
 import dev.MrFlyn.shopkeeperNavAddon.Main;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -174,6 +175,10 @@ public class ShopkeeperSorter {
         visualRepresentation.clear();
         for (Shopkeeper keeper : SKShopkeepersPlugin.getInstance().getShopkeeperRegistry().getAllShopkeepers()) {
             List<String> lore = new ArrayList<>();
+            if(keeper==null||keeper.getLocation() == null){
+                Bukkit.getLogger().warning("Unable to update a shopkeeper in the Gui. Possibly a corrupt shopkeeper?");
+                continue;
+            }
             for (TradingRecipe tr : keeper.getTradingRecipes(p)) {
                 String loreLine;
                 String resultItem = (tr.getResultItem().hasItemMeta()) ? ((!tr.getResultItem().getItemMeta().getDisplayName().equals("")) ?
