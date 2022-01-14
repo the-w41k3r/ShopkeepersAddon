@@ -1,0 +1,16 @@
+#Set this to false if you don't want players to get teleported on clicking the shopkeeper in the gui.
+AllowTeleportToShopkeepers: true
+EconomyHook:
+  #Setting this to true allows shopkeepers to trade using virtual-currency(Vault Api)
+  #This requires protocolLib and Vault to be installed
+  #Requires server restart
+  Enabled: true
+  #Enabling this will prevent players from setting up item to item based trades.
+  BlockItemBasedTrades: false
+  #Set the price limit for trades.
+  SellingPriceLimit: 100000000000000.00
+  #Enable this if bedrock players play in you server(Geyser plugin)
+  #Note: you need to have a prefix before the bedrock player's name for this to work(you need to have FloodGate Installed to change bedrock prefix).
+  Geyser-Compat:
+    Enabled: false
+    Name-Prefix: 'B_'

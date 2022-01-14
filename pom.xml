@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>ShopkeepersNavAddon</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <dependencies>
+        <dependency>
+            <groupId>spigot-1.17.1</groupId>
+            <artifactId>spigot-1.17.1</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>H:\ProjectAPIsSpigot\spigot-1.17.1.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>Shopkeepers-2.13.3</groupId>
+            <artifactId>Shopkeepers-2.13.3</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>H:\ProjectAPIsSpigot\Shopkeepers-2.13.3.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>PlotSquared-Bukkit-6.2.0-Premium</groupId>
+            <artifactId>PlotSquared-Bukkit-6.2.0-Premium</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>H:\ProjectAPIsSpigot\PlotSquared-Bukkit-6.2.0-Premium.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>worldedit-bukkit-7.2.7</groupId>
+            <artifactId>worldedit-bukkit-7.2.7</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>H:\ProjectAPIsSpigot\worldedit-bukkit-7.2.7.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>ProtocolLib</groupId>
+            <artifactId>ProtocolLib</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>H:\ProjectAPIsSpigot\ProtocolLib.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>Vault</groupId>
+            <artifactId>Vault</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>H:\ProjectAPIsSpigot\Vault.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>PacketWrapper</groupId>
+            <artifactId>PacketWrapper</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>H:\ProjectAPIsSpigot\PacketWrapper.jar</systemPath>
+        </dependency>
+    </dependencies>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+</project>

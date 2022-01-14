@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ShopkeepersNavAddon:jar">
+    <output-path>$PROJECT_DIR$/build</output-path>
+    <root id="archive" name="ShopkeepersAddon.jar">
+      <element id="module-output" name="ShopkeepersNavAddon" />
+    </root>
+  </artifact>
+</component>
