@@ -55,7 +55,7 @@ public class EcoHandler {
                     Main.plugin.messages.getString("Currency-Item.Name-Format").replace("[amount]",
                             Main.plugin.vaultHook.formattedMoney(0.0)),
                     Main.plugin.messages.getStringList("Currency-Item.Lore"),
-                    "ItemPrice", 0.0));
+                    "ItemPrice", 0.0, Main.plugin.messages.getInt("Currency-Item.CustomModelData")));
         }
         else if(InvUtils.hasPersistentData("ItemPrice", e.getCurrentItem(), PersistentDataType.DOUBLE)){
 

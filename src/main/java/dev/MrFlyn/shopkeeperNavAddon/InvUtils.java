@@ -48,6 +48,21 @@ public class InvUtils {
         itemStack.setItemMeta(meta);
         return itemStack;
     }
+
+    public static ItemStack ItemBuilder(Material m, int amount, String name, List<String> lore, String persistentDataKey, Double persistentData,
+                                        int CustomModelData) {
+        if (lore == null)
+            lore = new ArrayList<>();
+        ItemStack itemStack = new ItemStack(m, amount);
+        ItemMeta meta = itemStack.getItemMeta();
+        meta.setDisplayName(name);
+        meta.setLore(lore);
+        meta.setCustomModelData(CustomModelData);
+        NamespacedKey key = new NamespacedKey(Main.plugin, persistentDataKey);
+        meta.getPersistentDataContainer().set(key, PersistentDataType.DOUBLE, persistentData);
+        itemStack.setItemMeta(meta);
+        return itemStack;
+    }
     public static ItemStack ItemBuilder(Material m, int amount, String name, List<String> lore, String persistentDataKey, String persistentData) {
         if(lore == null)
             lore = new ArrayList<>();

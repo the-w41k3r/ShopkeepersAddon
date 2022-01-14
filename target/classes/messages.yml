@@ -13,5 +13,6 @@ Player-Inventory-Full: '§cYour inventory is full please clear it before purchas
 Currency-Item:
   Name-Format: 'Price [amount]'
   Material: 'PAPER'
+  CustomModelData: 0
   Lore:
     - '§bClick to edit'
