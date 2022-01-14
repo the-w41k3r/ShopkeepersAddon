@@ -45,7 +45,7 @@ public class EcoHandler {
                             Main.plugin.messages.getString("Currency-Item.Name-Format").replace("[amount]",
                                     Main.plugin.vaultHook.formattedMoney(0.0)),
                             Main.plugin.messages.getStringList("Currency-Item.Lore"),
-            "ItemPrice", 0.0));
+            "ItemPrice", 0.0, Main.plugin.messages.getInt("Currency-Item.CustomModelData")));
         }
         else if((e.getCurrentItem() == null || !(e.getCurrentItem().isSimilar(e.getCursor())))
                 &&(e.getSlot()>17&&e.getSlot()<27)&&e.getCursor()!=null&&e.getCursor().getType()!=Material.AIR&&
