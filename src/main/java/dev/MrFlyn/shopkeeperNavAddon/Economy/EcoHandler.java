@@ -302,10 +302,17 @@ public class EcoHandler {
 //                    ps.getOwner().sendMessage("§a-" + String.format("%.2f", price));
                     ps.getOwner().sendMessage(Main.plugin.messages.getString("Owner-Subtract-Money").replace("[amount]", String.format("%.2f", price)));
                 }
+                ItemStack clonedNbtItem0 = merchantInv.getItem(0).clone();
+                clonedNbtItem0.setAmount(merchantInv.getMerchant().getRecipe(merchantInv.getSelectedRecipeIndex()).getIngredients().get(0).getAmount());
+//                merchantInv.removeItem(merchantInv.getMerchant().getRecipe(merchantInv.getSelectedRecipeIndex()).getIngredients().get(0));
+                merchantInv.removeItem(clonedNbtItem0);
 
-                merchantInv.removeItem(merchantInv.getMerchant().getRecipe(merchantInv.getSelectedRecipeIndex()).getIngredients().get(0));
-                if(item2!=null)
-                    merchantInv.removeItem(merchantInv.getMerchant().getRecipe(merchantInv.getSelectedRecipeIndex()).getIngredients().get(1));
+                if(item2!=null) {
+                    ItemStack clonedNbtItem1 = merchantInv.getItem(1).clone();
+                    clonedNbtItem1.setAmount(merchantInv.getMerchant().getRecipe(merchantInv.getSelectedRecipeIndex()).getIngredients().get(0).getAmount());
+//                    merchantInv.removeItem(merchantInv.getMerchant().getRecipe(merchantInv.getSelectedRecipeIndex()).getIngredients().get(1));
+                    merchantInv.removeItem(clonedNbtItem1);
+                }
 //                e.getClickedInventory().setItem(0, null);
 //                e.getClickedInventory().setItem(1, null);
                 Main.plugin.vaultHook.giveMoney(p.getName(), price);
