@@ -1,14 +1,9 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="ShopkeepersAddon:jar">
-    <output-path>$PROJECT_DIR$/..</output-path>
+    <output-path>$PROJECT_DIR$/../../Server/plugins</output-path>
     <root id="archive" name="ShopkeepersAddon.jar">
       <element id="module-output" name="ShopkeepersAddon" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../APIs/ProtocolLib.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/../APIs/PacketWrapper.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../APIs/Shopkeepers-2.15.1.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../APIs/Vault.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../APIs/PlotSquared-Bukkit-6.6.3-Premium.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../APIs/worldedit-bukkit-7.2.10.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

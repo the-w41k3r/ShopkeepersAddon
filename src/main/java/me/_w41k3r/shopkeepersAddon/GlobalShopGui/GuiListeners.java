@@ -47,12 +47,12 @@ public class GuiListeners implements Listener {
     }
 
 
-    @EventHandler
-    public void onShopkeepersTrade(ShopkeeperTradeEvent t){
-        if(Main.getInstance().getConfig().getBoolean("EconomyHook.Enabled") == true){
-            t.setCancelled(true);
-        }
-    }
+//    @EventHandler
+//    public void onShopkeepersTrade(ShopkeeperTradeEvent t){
+//        if(Main.getInstance().getConfig().getBoolean("EconomyHook.Enabled") == true){
+//            t.setCancelled(true);
+//        }
+//    }
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e){
         if(e.getClickedInventory() == null)

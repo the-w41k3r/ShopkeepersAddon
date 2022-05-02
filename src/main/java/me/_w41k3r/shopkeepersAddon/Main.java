@@ -44,6 +44,8 @@ public class Main extends JavaPlugin {
                 getServer().getPluginManager().disablePlugin(this);
                 return;
             }
+
+            //
             vaultHook = new VaultHook();
             if(!vaultHook.setupEconomy()){
                 Bukkit.getLogger().severe(String.format("[%s] - Please install an Vault compatible economy plugin!", getDescription().getName()));
