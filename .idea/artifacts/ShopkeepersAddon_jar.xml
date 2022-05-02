@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ShopkeepersAddon:jar">
+    <output-path>$PROJECT_DIR$/../../Server/plugins</output-path>
+    <root id="archive" name="ShopkeepersAddon.jar">
+      <element id="module-output" name="ShopkeepersAddon" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../APIs/PacketWrapper.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
