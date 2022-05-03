@@ -1,15 +1,15 @@
 name: ShopkeepersAddon
-version: '2.7'
-description: i dont know what to put here
-authors: [MrFlyn]
+version: '2.8'
+description: Shopkeepers Addon for Economy and more.
+authors: [_w41k3r]
 depend:
   - Shopkeepers
 softdepend:
   - PlotSquared
   - ProtocolLib
   - Vault
-main: dev.MrFlyn.shopkeeperNavAddon.Main
-api-version: '1.14'
+main: me._w41k3r.shopkeepersAddon.Main
+api-version: '1.18'
 
 commands:
   shops:
