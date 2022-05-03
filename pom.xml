@@ -26,42 +26,42 @@
             <artifactId>Shopkeepers-2.15.1</artifactId>
             <scope>system</scope>
             <version>1.0</version>
-            <systemPath>D:/Github/APIs/Shopkeepers-2.15.1.jar</systemPath>
+            <systemPath>H:\ProjectAPIsSpigot\Shopkeepers-2.15.1.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>PlotSquared-Bukkit-6.2.0-Premium</groupId>
             <artifactId>PlotSquared-Bukkit-6.2.0-Premium</artifactId>
             <scope>system</scope>
             <version>1.0</version>
-            <systemPath>D:/Github/APIs/PlotSquared-Bukkit-6.6.3-Premium.jar</systemPath>
+            <systemPath>H:\ProjectAPIsSpigot\PlotSquared-Bukkit-6.2.0-Premium.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>worldedit-bukkit-7.2.7</groupId>
             <artifactId>worldedit-bukkit-7.2.7</artifactId>
             <scope>system</scope>
             <version>1.0</version>
-            <systemPath>D:/Github/APIs/worldedit-bukkit-7.2.10.jar</systemPath>
+            <systemPath>H:\ProjectAPIsSpigot\worldedit-bukkit-7.2.7.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>ProtocolLib</groupId>
             <artifactId>ProtocolLib</artifactId>
             <scope>system</scope>
             <version>1.0</version>
-            <systemPath>D:/Github/APIs/ProtocolLib.jar</systemPath>
+            <systemPath>H:\ProjectAPIsSpigot\ProtocolLib.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>Vault</groupId>
             <artifactId>Vault</artifactId>
             <scope>system</scope>
             <version>1.0</version>
-            <systemPath>D:/Github/APIs/Vault.jar</systemPath>
+            <systemPath>H:\ProjectAPIsSpigot\Vault.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>PacketWrapper</groupId>
             <artifactId>PacketWrapper</artifactId>
             <scope>system</scope>
             <version>1.0</version>
-            <systemPath>D:/Github/APIs/PacketWrapper.jar</systemPath>
+            <systemPath>H:\ProjectAPIsSpigot\PacketWrapper.jar</systemPath>
         </dependency>
     </dependencies>
 
