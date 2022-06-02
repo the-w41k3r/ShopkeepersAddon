@@ -26,10 +26,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.nisovin.shopkeepers</groupId>
-            <artifactId>ShopkeepersAPI</artifactId>
-            <version>2.15.1</version>
-            <scope>provided</scope>
+            <groupId>Shopkeepers-2.15.1</groupId>
+            <artifactId>Shopkeepers-2.15.1</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>D:/Github/APIs/Shopkeepers-2.15.1.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>PlotSquared-Bukkit-6.2.0-Premium</groupId>
