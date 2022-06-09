@@ -1,5 +1,5 @@
 name: ShopkeepersAddon
-version: '2.8'
+version: '2.9s'
 description: Shopkeepers Addon for Economy and more.
 authors: [_w41k3r]
 depend:
@@ -9,7 +9,7 @@ softdepend:
   - ProtocolLib
   - Vault
 main: me._w41k3r.shopkeepersAddon.Main
-api-version: '1.18'
+api-version: '1.13'
 
 commands:
   shops:
