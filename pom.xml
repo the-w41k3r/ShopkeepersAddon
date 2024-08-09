@@ -6,7 +6,7 @@
 
     <groupId>org.example</groupId>
     <artifactId>ShopkeepersAddon</artifactId>
-    <version>21.0.1</version>
+    <version>21.0.2</version>
     <build>
         <plugins>
             <plugin>

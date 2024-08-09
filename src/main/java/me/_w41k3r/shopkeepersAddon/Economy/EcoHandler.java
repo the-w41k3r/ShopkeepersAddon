@@ -117,6 +117,9 @@ public class EcoHandler {
                     } else {
                         p.sendMessage("§cYou don't have enough items to trade.");
                     }
+                } else {
+                    tradeInv.setItem(0, item1);
+                    tradeInv.setItem(2, result);
                 }
             }
         }
