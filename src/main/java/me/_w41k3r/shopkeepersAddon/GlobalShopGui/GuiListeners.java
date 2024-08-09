@@ -37,17 +37,6 @@ public class GuiListeners implements Listener {
     public void onShopkeeperEdit(ShopkeeperEditedEvent e){
         Player p = e.getPlayer();
             ShopkeeperSorter.updateSellingItemStacks(p);
-
-//            for (Shopkeeper s : ShopkeepersPlugin.getInstance().getShopkeeperRegistry().getAllPlayerShopkeepers()) {
-//                for (TradingRecipe tr : s.getTradingRecipes(p)) {
-//                    ItemStack stack = tr.getResultItem().copy();
-//                    stack.setAmount(1);
-//                    if (!sellingItemStacks.contains(stack)) {
-//                        sellingItemStacks.add(stack);
-//                    }
-//                }
-//            }
-//            sellingItemStacks.sort(new ItemStackComparator());
             ShopkeeperSorter.updateVisualRepresentationOfShopkeepers(p);
             ShopkeeperSorter.updateShopkeeperItemstacks(p);
     }@EventHandler
@@ -77,18 +66,15 @@ public class GuiListeners implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e){
+
         if(e.getClickedInventory() == null)
         {
-
             return;
         }
+
         if(e.getClickedInventory().getHolder() == null)
         {
-
-
             if(e.getInventory().getType() == InventoryType.MERCHANT  && (e.getSlot()==0 || e.getSlot()==1)) {
-                //System.out.println("Logging here");
-
                 e.setCancelled(true);
                 if(e.getCursor()!= null){
                     e.getWhoClicked().getInventory().addItem(new ItemStack(e.getCursor()));

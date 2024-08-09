@@ -57,11 +57,7 @@ public class EcoHandler {
 
     public static void onPriceItemClick(Player p, ItemStack clickedItem, Shopkeeper shopkeeper){
         PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.CLOSE_WINDOW);
-        try {
-            ProtocolLibrary.getProtocolManager().sendServerPacket(p, packet);
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
+        ProtocolLibrary.getProtocolManager().sendServerPacket(p, packet);
         p.sendMessage(Main.plugin.messages.getString("Price-Input-Request"));
         PriceChatInput.allPriceChats.put(p, new PriceChatInput(p, clickedItem, shopkeeper));
     }
@@ -111,29 +107,25 @@ public class EcoHandler {
         if (InvUtils.hasPersistentData("ItemPrice", item1, PersistentDataType.DOUBLE)) {
             double price = InvUtils.getPersistentDataPrice(item1);
             if (Main.plugin.vaultHook.hasMoney(p.getName(), price)) {
-                tradeInv.setItem(0, item1);
+                if (item2 != null) {
+                    if (p.getInventory().containsAtLeast(item2, item2.getAmount())) {
+                        tradeInv.setItem(0, item1);
+                        tradeInv.setItem(1, p.getInventory().getItem(p.getInventory().first(item2.getType())));
+                        tradeInv.setItem(2, result);
+                        p.getInventory().removeItem(p.getInventory().getItem(p.getInventory().first(item2.getType())));
+
+                    } else {
+                        p.sendMessage("§cYou don't have enough items to trade.");
+                    }
+                }
             }
         }
-//        else if(InvUtils.hasPersistentData("ItemPrice", result, PersistentDataType.DOUBLE)){
-//            if(p.getInventory().containsAtLeast(item1, item1.getAmount())&&(item2 == null || p.getInventory().containsAtLeast(item2, item2.getAmount()))){
-//                tradeInv.setItem(0, item1);
-//                tradeInv.setItem(1, item2);
-//                tradeInv.setItem(2, result);
-//                p.getInventory().removeItem(item1);
-//                if(item2!=null)
-//                    p.getInventory().removeItem(item2);
-//            }
-//        }
+
         p.updateInventory();
     }
 
 
 
-//    public static void onTrade(ShopkeeperTradeEvent e){
-//        Player p = e.getPlayer();
-//
-//
-//    }
 
     public static void onTrade(InventoryClickEvent e){
         if(e.getCurrentItem()==null)
@@ -226,14 +218,13 @@ public class EcoHandler {
                 p.updateInventory();
             }
             else if (keeper instanceof AdminShopkeeper) {
-                AdminShopkeeper as = (AdminShopkeeper) keeper;
-//                System.out.println(merchantInv.getSelectedRecipeIndex()+"RESULT");
-                p.getInventory().addItem(merchantInv.getMerchant().getRecipe(merchantInv.getSelectedRecipeIndex()).getResult());
-                if(item2!=null) {
-                    merchantInv.removeItem(merchantInv.getMerchant().getRecipe(merchantInv.getSelectedRecipeIndex()).getIngredients().get(1));
-//                    System.out.println("REMOVED");
+                if(merchantInv.getMerchant().getRecipe(merchantInv.getSelectedRecipeIndex()).getResult().equals(e.getCurrentItem())){
+                    p.getInventory().addItem(merchantInv.getMerchant().getRecipe(merchantInv.getSelectedRecipeIndex()).getResult());
+                    if(item2!=null) {
+                        merchantInv.removeItem(merchantInv.getMerchant().getRecipe(merchantInv.getSelectedRecipeIndex()).getIngredients().get(1));
+                    }
+                    p.updateInventory();
                 }
-                p.updateInventory();
             }
 
         }

@@ -1,5 +1,6 @@
 package me._w41k3r.shopkeepersAddon;
 
+import com.mojang.authlib.properties.Property;
 import com.nisovin.shopkeepers.api.util.UnmodifiableItemStack;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -7,10 +8,15 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
+import com.mojang.authlib.GameProfile;
 
+
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class InvUtils {
     public static ItemStack ItemBuilder(Material m, int amount, String name, List<String> lore) {
@@ -23,18 +29,44 @@ public class InvUtils {
         itemStack.setItemMeta(meta);
         return itemStack;
     }
-    public static ItemStack customPlayerHead(String skin, List<String> lore, String name) {
-        if(lore == null)
-            lore = new ArrayList<>();
-        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
-        //item = Bukkit.getUnsafe().modifyItemStack(head, dev.MrFlyn.shopkeeperNavAddon.Main.plugin.getConfig().getString("backpack." + String.valueOf(lev) + ".skin"));
-        head = Bukkit.getUnsafe().modifyItemStack(head, "{display:{Name:\"{\\\"text\\\":\\\"Pumpkin Bowl\\\"}\"},SkullOwner:{Id:[" + "I;1201296705,1414024019,-1385893868,1321399054" + "],Properties:{textures:[{Value:\"" + skin + "\"}]}}}");
-        ItemMeta meta = head.getItemMeta();
-        meta.setDisplayName(name);
-        meta.setLore(lore);
-        head.setItemMeta(meta);
+    public static ItemStack customPlayerHead(String texture, List<String> lore, String name) {
+        String profileName = sanitizeProfileName(name);
+
+        profileName = (profileName == null || profileName.isEmpty()) ? "DefaultName" : profileName;
+
+        GameProfile profile = new GameProfile(UUID.randomUUID(), profileName);
+
+        if (texture != null && !texture.isEmpty()) {
+            profile.getProperties().put("textures", new Property("textures", texture));
+        }
+
+        ItemStack head = new ItemStack(Material.PLAYER_HEAD, 1);
+        ItemMeta headMeta = head.getItemMeta();
+
+        if (headMeta != null) {
+            headMeta.setDisplayName(profileName); // Use sanitized profile name
+            headMeta.setLore(lore);
+
+            try {
+                Field profileField = headMeta.getClass().getDeclaredField("profile");
+                profileField.setAccessible(true);
+                profileField.set(headMeta, profile);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
+            head.setItemMeta(headMeta);
+        }
+
         return head;
     }
+
+    public static String sanitizeProfileName(String name) {
+        String sanitized = name.replaceAll("[^a-zA-Z0-9_]", "");
+        return sanitized.length() > 16 ? sanitized.substring(0, 16) : sanitized;
+    }
+
+
     public static ItemStack ItemBuilder(Material m, int amount, String name, List<String> lore, String persistentDataKey, Double persistentData) {
         if(lore == null)
             lore = new ArrayList<>();

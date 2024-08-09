@@ -16,7 +16,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -86,17 +88,13 @@ public class EcoListeners implements Listener {
                                 e.getCurrentItem().setAmount(0);
                                 return;
                             }
-//                            e.getCurrentItem().setAmount(1);
                             EcoHandler.onPriceItemClick(p, e.getCurrentItem(), ShopkeepersAPI.getUIRegistry().getUISession(p).getShopkeeper());
-//                        e.getInventory().setItem(e.getSlot(), e.getCurrentItem());
                         }
 
                     }
                     else{
                         if (InvUtils.hasPersistentData("ItemPrice", e.getCurrentItem(), PersistentDataType.DOUBLE)) {
                             e.getCurrentItem().setAmount(0);
-//                            EcoHandler.onPriceItemClick(p, e.getCurrentItem(), ShopkeepersAPI.getUIRegistry().getUISession(p).getShopkeeper());
-//                        e.getInventory().setItem(e.getSlot(), e.getCurrentItem());
                         }
                     }
                 }
@@ -138,26 +136,39 @@ public class EcoListeners implements Listener {
     //detect click on the trade sidebar
     @EventHandler
     public void onTradeSelect(TradeSelectEvent e){
-        if (ShopkeepersAPI.getUIRegistry().getUISession((Player) e.getWhoClicked()) == null)
+
+        if (e.getInventory().getSelectedRecipe() != null && e.getInventory().getSelectedRecipe().equals(e.getMerchant().getRecipe(e.getIndex()))) {
             return;
-        Player p = (Player) e.getWhoClicked();
-        if (ShopkeepersAPI.getUIRegistry().getUISession(p).getUIType() == DefaultUITypes.TRADING()) {
-//                        e.setCancelled(true);
-            for(ItemStack item : e.getView().getTopInventory()){
-                if(InvUtils.hasPersistentData("ItemPrice", item, PersistentDataType.DOUBLE)){
-//                    e.getView().getTopInventory().setItem(0, null);
-                    item.setAmount(0);
-                    p.updateInventory();
-                }
-            }
-//            System.out.println("TRADE SELECT");
-            (new BukkitRunnable() {
-                @Override
-                public void run() {
-                    EcoHandler.onTradeSelect(e);
-                }
-            }).runTask(Main.plugin);
         }
+        if (ShopkeepersAPI.getUIRegistry().getUISession((Player) e.getWhoClicked()) == null ||
+                !(ShopkeepersAPI.getUIRegistry().getUISession(((Player) e.getWhoClicked()).getPlayer()).getUIType() == DefaultUITypes.TRADING()))
+            return;
+        MerchantRecipe s1 = e.getMerchant().getRecipe(e.getIndex());
+
+        boolean isNormalItem = true;
+
+        if (InvUtils.hasPersistentData("ItemPrice", s1.getResult(), PersistentDataType.DOUBLE)){
+            e.setCancelled(true);
+            isNormalItem = false;
+        }
+        for(ItemStack item : s1.getIngredients()){
+            if(InvUtils.hasPersistentData("ItemPrice", item, PersistentDataType.DOUBLE)){
+                e.setCancelled(true);
+                isNormalItem = false;
+            }
+        }
+
+        if (isNormalItem) {
+            return;
+        }
+
+
+        (new BukkitRunnable() {
+            @Override
+            public void run() {
+                EcoHandler.onTradeSelect(e);
+            }
+        }).runTask(Main.plugin);
 
     }
     @EventHandler

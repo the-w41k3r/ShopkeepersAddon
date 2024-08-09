@@ -7,8 +7,10 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="ShopkeepersAddon" />
-        <module name="ShopkeepersNavAddon" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="ShopkeepersNavAddon" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
