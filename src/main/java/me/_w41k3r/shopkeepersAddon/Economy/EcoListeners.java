@@ -145,20 +145,12 @@ public class EcoListeners implements Listener {
             return;
         MerchantRecipe s1 = e.getMerchant().getRecipe(e.getIndex());
 
-        boolean isNormalItem = true;
+        boolean thirdItem = s1.getIngredients().size() < 2  ? false : InvUtils.hasPersistentData("ItemPrice", s1.getIngredients().get(1), PersistentDataType.DOUBLE);
 
-        if (InvUtils.hasPersistentData("ItemPrice", s1.getResult(), PersistentDataType.DOUBLE)){
-            e.setCancelled(true);
-            isNormalItem = false;
-        }
-        for(ItemStack item : s1.getIngredients()){
-            if(InvUtils.hasPersistentData("ItemPrice", item, PersistentDataType.DOUBLE)){
-                e.setCancelled(true);
-                isNormalItem = false;
-            }
-        }
-
-        if (isNormalItem) {
+        if (!(InvUtils.hasPersistentData("ItemPrice", s1.getResult(), PersistentDataType.DOUBLE) ||
+                InvUtils.hasPersistentData("ItemPrice", s1.getIngredients().get(0), PersistentDataType.DOUBLE) ||
+                thirdItem
+        )){
             return;
         }
 
