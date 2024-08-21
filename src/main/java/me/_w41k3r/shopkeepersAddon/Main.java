@@ -77,15 +77,21 @@ public class Main extends JavaPlugin {
     }
 
     public boolean isSafeLocation(Location location) {
-        if (!location.getBlock().getType().isAir() || !location.clone().add(0, 1, 0).getBlock().getType().isAir()) {
-            return false;
+        Block feet = location.getBlock();
+        if (!feet.getType().isTransparent() && !feet.getLocation().add(0, 1, 0).getBlock().getType().isTransparent()) {
+            return false; // not transparent (will suffocate)
         }
-        for (int i = 1; i <= 2; i++) {
-            Location checkLocation = location.clone().subtract(0, i, 0);
-            if (checkLocation.getBlock().getType().isSolid()) {
-                return true;
-            }
+        Block head = feet.getRelative(BlockFace.UP);
+        if (!head.getType().isTransparent()) {
+            return false; // not transparent (will suffocate)
         }
-        return false;
+        Block ground = feet.getRelative(BlockFace.DOWN);
+        if (!ground.getType().isSolid()) {
+            return false; // not solid
+        }
+        if (feet.getType() != Material.AIR) {
+            return false; // not solid
+        }
+        return true;
     }
 }

@@ -78,11 +78,14 @@ public class EcoHandler {
         try {
             double price = Double.parseDouble(priceInput);
             if(price>Main.plugin.getConfig().getDouble("EconomyHook.SellingPriceLimit")){
+//                onPriceCancel(p, "§cYour trade setup was cancelled due to invalid price input. Highest price limit is "
+//                        +String.format("%.2f",Main.plugin.getConfig().getDouble("SellingPriceLimit")), shopkeeper);
                 onPriceCancel(p, Main.plugin.messages.getString("Price-Limit-Reached")
                         .replace("[maxPrice]", String.format("%.2f", Main.plugin.getConfig().getDouble("EconomyHook.SellingPriceLimit"))), shopkeeper);
                 return;
             }
             ItemMeta meta = clickedItem.getItemMeta();
+//            meta.setDisplayName("Price "+String.format("%.2f",price));
             meta.setDisplayName(Main.plugin.messages.getString("Currency-Item.Name-Format").replace("[amount]",
                     Main.plugin.vaultHook.formattedMoney(price)));
             meta.getPersistentDataContainer().set(new NamespacedKey(Main.plugin, "ItemPrice"), PersistentDataType.DOUBLE, price);
@@ -105,35 +108,23 @@ public class EcoHandler {
             double price = InvUtils.getPersistentDataPrice(item1);
             if (Main.plugin.vaultHook.hasMoney(p.getName(), price)) {
                 if (item2 != null) {
-                    tradeInv.setItem(0, item1);
-                    tradeInv.setItem(1, p.getInventory().getItem(p.getInventory().first(item2.getType())));
-                    p.getInventory().removeItem(p.getInventory().getItem(p.getInventory().first(item2.getType())));
-                    tradeInv.setItem(2, result);
-                    p.updateInventory();
+                    if (p.getInventory().containsAtLeast(item2, item2.getAmount())) {
+                        tradeInv.setItem(0, item1);
+                        tradeInv.setItem(1, p.getInventory().getItem(p.getInventory().first(item2.getType())));
+                        tradeInv.setItem(2, result);
+                        p.getInventory().removeItem(p.getInventory().getItem(p.getInventory().first(item2.getType())));
+
+                    } else {
+                        p.sendMessage("§cYou don't have enough items to trade.");
+                    }
                 } else {
                     tradeInv.setItem(0, item1);
                     tradeInv.setItem(2, result);
-                    p.updateInventory();
                 }
             }
-        } else if (InvUtils.hasPersistentData("ItemPrice", result, PersistentDataType.DOUBLE)) {
-            if (item2 != null) {
-                tradeInv.setItem(0, p.getInventory().getItem(p.getInventory().first(item1.getType())));
-                tradeInv.setItem(1, p.getInventory().getItem(p.getInventory().first(item2.getType())));
-                tradeInv.setItem(2, result);
-                p.getInventory().removeItem(p.getInventory().getItem(p.getInventory().first(item1.getType())));
-                p.getInventory().removeItem(p.getInventory().getItem(p.getInventory().first(item2.getType())));
-                p.updateInventory();
-            } else {
-                tradeInv.setItem(0, p.getInventory().getItem(p.getInventory().first(item1.getType())));
-                tradeInv.setItem(2, result);
-                p.getInventory().removeItem(p.getInventory().getItem(p.getInventory().first(item1.getType())));
-                p.updateInventory();
-            }
-
-
         }
 
+        p.updateInventory();
     }
 
 
@@ -148,6 +139,7 @@ public class EcoHandler {
             return;
         MerchantInventory merchantInv = (MerchantInventory) e.getClickedInventory();
         if(merchantInv.getMerchant().getRecipe(merchantInv.getSelectedRecipeIndex())==null) {
+//            System.out.println("MERCHANT NULL");
             return;
         }
         if(ShopkeepersAPI.getUIRegistry().getUISession((Player) e.getWhoClicked())==null)

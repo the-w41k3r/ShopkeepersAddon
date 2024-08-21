@@ -99,18 +99,14 @@ public class GuiListeners implements Listener {
             e.setCancelled(true);
         }
         if(e.getClickedInventory().getHolder() instanceof ShopInv){
-
             ShopInv holder = (ShopInv) e.getClickedInventory().getHolder();
             e.setCancelled(true);
-
             switch (holder.getMenuType()){
                 case MAIN_MENU:
-
                     if(e.getCurrentItem().getType() != Material.PLAYER_HEAD) {
                         return;
                     }
-
-                    if(e.getCurrentItem().getItemMeta().getDisplayName().equals("ItemShop")){
+                    if(e.getCurrentItem().getItemMeta().getDisplayName().equals("Item Shop")){
                         (new BukkitRunnable(){
                             @Override
                             public void run() {
@@ -119,7 +115,7 @@ public class GuiListeners implements Listener {
                         }).runTask(ShopkeepersPlugin.getInstance());
                         return;
                     }
-                    if (e.getCurrentItem().getItemMeta().getDisplayName().equals("AdminShop")) {
+                    if (e.getCurrentItem().getItemMeta().getDisplayName().equals("Admin Shop")) {
                         (new BukkitRunnable() {
                             @Override
                             public void run() {
@@ -128,7 +124,7 @@ public class GuiListeners implements Listener {
                         }).runTask(ShopkeepersPlugin.getInstance());
                         return;
                     }
-                    if (e.getCurrentItem().getItemMeta().getDisplayName().equals("PlayerShop")) {
+                    if (e.getCurrentItem().getItemMeta().getDisplayName().equals("Player Shop")) {
                         (new BukkitRunnable() {
                             @Override
                             public void run() {
@@ -153,7 +149,7 @@ public class GuiListeners implements Listener {
                         }
                     } else if (e.getSlot() == 47) {
                         if(e.getCurrentItem().getType() == Material.PLAYER_HEAD) {
-                            if (e.getCurrentItem().getItemMeta().getDisplayName().equals("MainMenu")) {
+                            if (e.getCurrentItem().getItemMeta().getDisplayName().equals("Main Menu")) {
                                 ShopGUI.openShopGUI((Player) e.getWhoClicked(), MenuType.MAIN_MENU);
                                 return;
                             }
@@ -187,7 +183,7 @@ public class GuiListeners implements Listener {
                         }
                     } else if (e.getSlot() == 47) {
                         if(e.getCurrentItem().getType() == Material.PLAYER_HEAD) {
-                            if (e.getCurrentItem().getItemMeta().getDisplayName().equals("MainMenu")) {
+                            if (e.getCurrentItem().getItemMeta().getDisplayName().equals("Main Menu")) {
                                 ShopGUI.openShopGUI((Player) e.getWhoClicked(), MenuType.MAIN_MENU);
                                 return;
                             }
@@ -220,13 +216,13 @@ public class GuiListeners implements Listener {
                         }
                     } else if (e.getSlot() == 47) {
                         if(e.getCurrentItem().getType() == Material.PLAYER_HEAD) {
-                            if (e.getCurrentItem().getItemMeta().getDisplayName().equals("MainMenu")) {
+                            if (e.getCurrentItem().getItemMeta().getDisplayName().equals("Main Menu")) {
                                 ShopGUI.openShopGUI((Player) e.getWhoClicked(), MenuType.MAIN_MENU);
                                 return;
-                            }if (e.getCurrentItem().getItemMeta().getDisplayName().equals("ItemShop")) {
+                            }if (e.getCurrentItem().getItemMeta().getDisplayName().equals("Item Shop")) {
                                 ShopGUI.openShopGUI((Player) e.getWhoClicked(), MenuType.ITEM_SHOP);
                                 return;
-                            }if (e.getCurrentItem().getItemMeta().getDisplayName().equals("PlayerShop")) {
+                            }if (e.getCurrentItem().getItemMeta().getDisplayName().equals("Player Shop")) {
                                 ShopGUI.openShopGUI((Player) e.getWhoClicked(), MenuType.PLAYER_SHOP);
                                 return;
                             }
@@ -243,47 +239,24 @@ public class GuiListeners implements Listener {
                         ItemMeta itemMeta = e.getCurrentItem().getItemMeta();
                         PersistentDataContainer tagContainer = itemMeta.getPersistentDataContainer();
 
-                        if (tagContainer.has(key, PersistentDataType.STRING)) {
-                            String locString = tagContainer.get(key, PersistentDataType.STRING);
-                            Location villagerLocation = new Location(
-                                    Bukkit.getWorld(locString.split(" ")[0]),
-                                    Double.parseDouble(locString.split(" ")[1]),
-                                    Double.parseDouble(locString.split(" ")[2]),
-                                    Double.parseDouble(locString.split(" ")[3])
-                            );
-
+                        if(tagContainer.has(key , PersistentDataType.STRING)) {
+                            String locString = tagContainer.get(key , PersistentDataType.STRING);
+                            Location loc = new Location(Bukkit.getWorld(locString.split(" ")[0]), Double.parseDouble(locString.split(" ")[1]),
+                                    Double.parseDouble(locString.split(" ")[2]), Double.parseDouble(locString.split(" ")[3]));
                             if (Main.plugin.getConfig().getBoolean("AllowTeleportToShopkeepers")) {
                                 if (e.getWhoClicked().hasPermission("SNA.teleport")) {
                                     if (Main.plugin.plotSquaredHook == null) {
-                                        Location safeLocation = null;
-                                        for (int x = -2; x <= 2; x++) {
-                                            for (int z = -2; z <= 2; z++) {
-                                                // Skip the villager's location itself
-                                                if (x == 0 && z == 0) continue;
-
-                                                Location potentialLocation = villagerLocation.clone().add(x, 0, z);
-                                                if (Main.plugin.isSafeLocation(potentialLocation)) {
-                                                    safeLocation = potentialLocation;
-                                                    break;
-                                                }
-                                            }
-                                            if (safeLocation != null) break;
-                                        }
-
-                                        if (safeLocation != null) {
-                                            // Make the player face the villager
-                                            safeLocation.setDirection(villagerLocation.toVector().subtract(safeLocation.toVector()));
-                                            e.getWhoClicked().teleport(safeLocation);
+                                        if (Main.plugin.isSafeLocation(loc)) {
+                                            e.getWhoClicked().teleport(loc);
                                         } else {
-                                            e.getWhoClicked().sendMessage("§cNo safe teleport location found around the villager.");
+                                            e.getWhoClicked().sendMessage("§cUnsafe location detected. Cancelling teleport...");
                                         }
                                         e.getWhoClicked().closeInventory();
                                     } else {
-                                        // Handle teleportation with PlotSquaredHook
                                         (new BukkitRunnable() {
                                             @Override
                                             public void run() {
-                                                Main.plugin.plotSquaredHook.teleportPlayerPlotSquared((Player) e.getWhoClicked(), villagerLocation);
+                                                Main.plugin.plotSquaredHook.teleportPlayerPlotSquared((Player) e.getWhoClicked(), loc);
                                             }
                                         }).runTask(Main.plugin);
                                     }
@@ -293,7 +266,6 @@ public class GuiListeners implements Listener {
                                 }
                             }
                         }
-
                     }
                     break;
                 case ADMIN_SHOP:
@@ -308,7 +280,7 @@ public class GuiListeners implements Listener {
                         }
                     } else if (e.getSlot() == 47) {
                         if(e.getCurrentItem().getType() == Material.PLAYER_HEAD) {
-                            if (e.getCurrentItem().getItemMeta().getDisplayName().equals("MainMenu")) {
+                            if (e.getCurrentItem().getItemMeta().getDisplayName().equals("Main Menu")) {
                                 ShopGUI.openShopGUI((Player) e.getWhoClicked(), MenuType.MAIN_MENU);
                                 return;
                             }
@@ -325,49 +297,24 @@ public class GuiListeners implements Listener {
                         ItemMeta itemMeta = e.getCurrentItem().getItemMeta();
                         PersistentDataContainer tagContainer = itemMeta.getPersistentDataContainer();
 
-
-
-                        if (tagContainer.has(key, PersistentDataType.STRING)) {
-                            String locString = tagContainer.get(key, PersistentDataType.STRING);
-                            Location villagerLocation = new Location(
-                                    Bukkit.getWorld(locString.split(" ")[0]),
-                                    Double.parseDouble(locString.split(" ")[1]),
-                                    Double.parseDouble(locString.split(" ")[2]),
-                                    Double.parseDouble(locString.split(" ")[3])
-                            );
-
+                        if (tagContainer.has(key , PersistentDataType.STRING)) {
+                            String locString = tagContainer.get(key , PersistentDataType.STRING);
+                            Location loc = new Location(Bukkit.getWorld(locString.split(" ")[0]), Double.parseDouble(locString.split(" ")[1]),
+                                    Double.parseDouble(locString.split(" ")[2]), Double.parseDouble(locString.split(" ")[3]));
                             if (Main.plugin.getConfig().getBoolean("AllowTeleportToShopkeepers")) {
                                 if (e.getWhoClicked().hasPermission("SNA.teleport")) {
                                     if (Main.plugin.plotSquaredHook == null) {
-                                        Location safeLocation = null;
-                                        for (int x = -2; x <= 2; x++) {
-                                            for (int z = -2; z <= 2; z++) {
-                                                // Skip the villager's location itself
-                                                if (x == 0 && z == 0) continue;
-
-                                                Location potentialLocation = villagerLocation.clone().add(x, 0, z);
-                                                if (Main.plugin.isSafeLocation(potentialLocation)) {
-                                                    safeLocation = potentialLocation;
-                                                    break;
-                                                }
-                                            }
-                                            if (safeLocation != null) break;
-                                        }
-
-                                        if (safeLocation != null) {
-                                            // Make the player face the villager
-                                            safeLocation.setDirection(villagerLocation.toVector().subtract(safeLocation.toVector()));
-                                            e.getWhoClicked().teleport(safeLocation);
+                                        if (Main.plugin.isSafeLocation(loc)) {
+                                            e.getWhoClicked().teleport(loc);
                                         } else {
-                                            e.getWhoClicked().sendMessage("§cNo safe teleport location found around the villager.");
+                                            e.getWhoClicked().sendMessage("§cUnsafe location detected. Cancelling teleport...");
                                         }
                                         e.getWhoClicked().closeInventory();
                                     } else {
-                                        // Handle teleportation with PlotSquaredHook
                                         (new BukkitRunnable() {
                                             @Override
                                             public void run() {
-                                                Main.plugin.plotSquaredHook.teleportPlayerPlotSquared((Player) e.getWhoClicked(), villagerLocation);
+                                                Main.plugin.plotSquaredHook.teleportPlayerPlotSquared((Player) e.getWhoClicked(), loc);
                                             }
                                         }).runTask(Main.plugin);
                                     }
@@ -391,7 +338,7 @@ public class GuiListeners implements Listener {
                         }
                     } else if (e.getSlot() == 47) {
                         if (e.getCurrentItem().getType() == Material.PLAYER_HEAD) {
-                            if (e.getCurrentItem().getItemMeta().getDisplayName().equals("MainMenu")) {
+                            if (e.getCurrentItem().getItemMeta().getDisplayName().equals("Main Menu")) {
                                 ShopGUI.openShopGUI((Player) e.getWhoClicked(), MenuType.MAIN_MENU);
                                 return;
                             }

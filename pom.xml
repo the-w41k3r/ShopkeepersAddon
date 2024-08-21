@@ -4,47 +4,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>me._w41k3r</groupId>
+    <groupId>org.example</groupId>
     <artifactId>ShopkeepersAddon</artifactId>
-    <version>2.23.0.1</version>
-
+    <version>21.0.2</version>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.4.2</version>
-                <executions>
-                    <!-- Snapshot JAR -->
-                    <execution>
-                        <id>snapshot-jar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>v${project.version}-snapshot</classifier>
-                            <outputDirectory>B:\Test\plugins</outputDirectory>
-                            <finalName>ShopkeepersAddon</finalName>
-                        </configuration>
-                    </execution>
-                    <!-- Release JAR -->
-                    <execution>
-                        <id>release-jar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>v${project.version}</classifier>
-                            <outputDirectory>${project.basedir}\build</outputDirectory>
-                            <finalName>ShopkeepersAddon</finalName>
-                        </configuration>
-                    </execution>
-                </executions>
+                <configuration>
+                    <outputDirectory>B:\Test\plugins</outputDirectory>
+                    <finalName>ShopkeepersAddon</finalName>
+                </configuration>
             </plugin>
         </plugins>
-
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -52,9 +26,8 @@
             </resource>
         </resources>
     </build>
-
     <repositories>
-        <!-- Repositories for dependencies -->
+        <!-- This adds the Spigot Maven repository to the build -->
         <repository>
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
@@ -81,6 +54,7 @@
         </repository>
     </repositories>
 
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -92,7 +66,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
@@ -100,6 +73,7 @@
             <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>com.nisovin.shopkeepers</groupId>
             <artifactId>ShopkeepersAPI</artifactId>
@@ -111,6 +85,7 @@
             <artifactId>plotsquared-core</artifactId>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>com.intellectualsites.plotsquared</groupId>
             <artifactId>plotsquared-bukkit</artifactId>
