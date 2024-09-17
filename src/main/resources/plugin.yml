@@ -1,46 +1,48 @@
 name: ShopkeepersAddon
 version: '${project.version}'
-description: Shopkeepers Addon for Economy and more.
-authors: [_w41k3r]
-depend:
-  - Shopkeepers
-softdepend:
-  - PlotSquared
-  - ProtocolLib
-  - Vault
-main: me._w41k3r.shopkeepersAddon.Main
-api-version: '1.13'
-
+main: me.w41k3r.shopkeepersaddon.Main
+api-version: 1.16
+depend: [Shopkeepers, Vault]
+softdepend: [Essentials, CMI]
 commands:
+  shopkeepersaddon:
+    description: ShopkeepersAddon command
+    usage: /shopkeepersaddon [args]
+    permission: shopkeepersaddon.command
+    default: op
+    aliases:
+      - ska
+
   shops:
-    description: shop
-    usage: '/<command>'
-  playershops:
-    description: shop gui withoud admin shop icon
-    usage: '/<command>'
-  shop:
-    description: opens admin shops gui with remote access
-    usage: '/<command>'
-  sna:
-    description: parent command
-    usage: '/<command> []'
+    description: ShopkeepersAddon shops command
+    usage: /shops
+    permission: shopkeepersaddon.shops.command
+
+  visitShop:
+    description: ShopkeepersAddon visitShop command
+    usage: /visitShop [player]
+    permission: shopkeepersaddon.visitShop.command
+    aliases:
+      - vshop
+
+  setshop:
+    description: Set a shop entry point or teleport location.
+    usage: /setshop [description]
+    permission: shopkeepersaddon.setshop.command
 
 permissions:
-  SNA.command.shops:
-    description: allows /shops or /sna shops command
-    default: op
-  SNA.command.shop:
-    description: allows /shop or /sna shop command
-    default: op
-  SNA.command.playershops:
-    description: allows /playershops or /sna playershops command
-    default: op
-  SNA.teleport:
-    description: teleport on click
-    default: op
-  SNA.command.help:
-    description: show /sna help message.
-    default: op
-  SNA.admin:
-    description: allows /sna reload command.
-    default: op
+    shopkeepersaddon.command:
+        description: ShopkeepersAddon command permission
+        default: true
+    shopkeepersaddon.shops.command:
+        description: ShopkeepersAddon shops command permission
+        default: true
+    shopkeepersaddon.visitShop.command:
+        description: ShopkeepersAddon visitShop command permission
+        default: true
+    shopkeeperaddon.adminshop.warmup.bypass:
+        description: Bypass the warmup for teleporting to admin shops
+        default: false
+    shopkeeperaddon.playershop.warmup.bypass:
+        description: Bypass the warmup for teleporting to player shops
+        default: false
