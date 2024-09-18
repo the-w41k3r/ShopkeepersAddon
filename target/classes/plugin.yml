@@ -1,0 +1,48 @@
+name: ShopkeepersAddon
+version: '2.23.0.1'
+main: me.w41k3r.shopkeepersaddon.Main
+api-version: 1.16
+depend: [Shopkeepers, Vault]
+softdepend: [Essentials, CMI]
+commands:
+  shopkeepersaddon:
+    description: ShopkeepersAddon command
+    usage: /shopkeepersaddon [args]
+    permission: shopkeepersaddon.command
+    default: op
+    aliases:
+      - ska
+
+  shops:
+    description: ShopkeepersAddon shops command
+    usage: /shops
+    permission: shopkeepersaddon.shops.command
+
+  visitShop:
+    description: ShopkeepersAddon visitShop command
+    usage: /visitShop [player]
+    permission: shopkeepersaddon.visitShop.command
+    aliases:
+      - vshop
+
+  setshop:
+    description: Set a shop entry point or teleport location.
+    usage: /setshop [description]
+    permission: shopkeepersaddon.setshop.command
+
+permissions:
+    shopkeepersaddon.command:
+        description: ShopkeepersAddon command permission
+        default: true
+    shopkeepersaddon.shops.command:
+        description: ShopkeepersAddon shops command permission
+        default: true
+    shopkeepersaddon.visitShop.command:
+        description: ShopkeepersAddon visitShop command permission
+        default: true
+    shopkeeperaddon.adminshop.warmup.bypass:
+        description: Bypass the warmup for teleporting to admin shops
+        default: false
+    shopkeeperaddon.playershop.warmup.bypass:
+        description: Bypass the warmup for teleporting to player shops
+        default: false
