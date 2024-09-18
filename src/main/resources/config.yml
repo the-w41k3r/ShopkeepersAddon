@@ -57,17 +57,18 @@ messages:
   no-money: "§cYou don't have enough money!"
   no-money-owner: "§cThe shop owner does not have enough money to make this transaction!"
   set-price: "§aEnter the price for this item in chat."
-  no-shop: "§cThis player has not setup a shop yet."
   price-change-cancelled: "§cPrice change cancelled!"
   price-changed: "§aPrice changed to §f%price%§a."
   invalid-price: "§cInvalid price! Please enter a valid number."
   shop-set: "§aShop set successfully! Teleport to your shop using §f/visitShop"
-  buy-success: "§aTransaction successful!"
+  no-shop: "§cThis player has not setup a shop using §f/setshop §ccommand."
 
 
   shops:
     shops-ui: "§8§lShops"
     player-shops-ui: "§8§lPlayer Shops"
-    player-item-shops-ui: "§8§lPlayer Item Shops"
+    player-items-ui: "§8§lPlayer Item Shops"
     admin-shops-ui: "§8§lAdmin Shops"
-    admin-item-shops-ui: "§8§lAdmin Item Shops"
+    admin-items-ui: "§8§lAdmin Item Shops"
+    players-list-ui: "§8§lPlayers"
+

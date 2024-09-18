@@ -10,15 +10,14 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
 
-import static me.w41k3r.shopkeepersaddon.General.Utils.hasData;
-import static me.w41k3r.shopkeepersaddon.General.Utils.setPrice;
+import static me.w41k3r.shopkeepersaddon.General.Utils.*;
 import static me.w41k3r.shopkeepersaddon.Main.*;
 
 public class EcoUtils {
 
     static boolean hasMoney(Player player, double amount){
         if (Money.getBalance(player) < amount){
-            sendPlayerMessage(player,setting().getString("messages.no-money"));
+            debugLog("Not enough money!" + amount);
             return false;
         }
         return true;

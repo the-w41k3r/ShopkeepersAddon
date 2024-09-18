@@ -1,15 +1,14 @@
 package me.w41k3r.shopkeepersaddon.General;
 
+import com.nisovin.shopkeepers.api.ShopkeepersAPI;
+import com.nisovin.shopkeepers.api.shopkeeper.Shopkeeper;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static me.w41k3r.shopkeepersaddon.General.Utils.*;
 import static me.w41k3r.shopkeepersaddon.Main.virtualOwner;
@@ -62,10 +61,7 @@ public class UIHandler {
     }
 
     static void addItemsToUI(Map<String, Object> obj) {
-
-
         Map<String, Object> recipes = (Map<String, Object>) (obj.containsKey("recipes") ? obj.get("recipes") : obj.get("offers"));
-
         for (Map.Entry<String, Object> entry : recipes.entrySet()) {
             Map<String, Object> recipeData = (Map<String, Object>) entry.getValue();
             ItemStack item = createItemStackFromYaml((Map<String, Object>) recipeData.get("resultItem"));
@@ -153,13 +149,13 @@ public class UIHandler {
                     break;
                 case "playerItems":
                     debugLog("Creating new PlayerItemsUI Page: " + currentPage);
-                    page = Bukkit.createInventory(virtualOwner, 54, configData("messages.shops.players-item-shops-ui") + " - Page " + (currentPage + 1));
+                    page = Bukkit.createInventory(virtualOwner, 54, configData("messages.shops.player-items-ui") + " - Page " + (currentPage + 1));
                     setLastRowAsStainedGlassPane(page, currentPage, type);
                     ShopsUI.put(currentPage, page);
                     break;
                 case "adminItems":
                     debugLog("Creating new AdminItemsUI Page: " + currentPage);
-                    page = Bukkit.createInventory(virtualOwner, 54, configData("messages.shops.admin-item-shops-ui") + " - Page " + (currentPage + 1));
+                    page = Bukkit.createInventory(virtualOwner, 54, configData("messages.shops.admin-items-ui") + " - Page " + (currentPage + 1));
                     setLastRowAsStainedGlassPane(page, currentPage, type);
                     ShopsUI.put(currentPage, page);
                     break;
@@ -261,6 +257,10 @@ public class UIHandler {
         allAdminShops.clear();
         allPlayerItems.clear();
         allAdminItems.clear();
+        PlayerShopsList.clear();
+        playerItems.clear();
+        adminItems.clear();
+        itemInventories.clear();
         Inventory page = getOrCreatePage(allPlayerShops, "player");
         allPlayerShops.put(0, page);
         page = getOrCreatePage(allAdminShops, "admin");

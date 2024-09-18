@@ -1,10 +1,12 @@
 package me.w41k3r.shopkeepersaddon;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Arrays;
 
@@ -34,7 +36,12 @@ public class Commands implements CommandExecutor {
             if (strings.length < 1) {
                 return false;
             }
-            setShop((Player) commandSender, Arrays.toString(strings));
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    setShop(commandSender.getName(), Arrays.toString(strings), (Player) commandSender);
+                }
+            }.runTaskAsynchronously(Main.plugin);
             return true;
         }
 

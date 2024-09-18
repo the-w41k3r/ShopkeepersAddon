@@ -1,5 +1,6 @@
 package me.w41k3r.shopkeepersaddon.General;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
@@ -10,6 +11,7 @@ import com.nisovin.shopkeepers.api.shopkeeper.ShopkeeperRegistry;
 import com.nisovin.shopkeepers.api.shopkeeper.TradingRecipe;
 import com.nisovin.shopkeepers.api.shopkeeper.admin.AdminShopkeeper;
 import com.nisovin.shopkeepers.api.shopkeeper.player.PlayerShopkeeper;
+import me.w41k3r.shopkeepersaddon.Main;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -32,6 +34,7 @@ import java.sql.*;
 import java.util.*;
 
 import static me.w41k3r.shopkeepersaddon.General.UIHandler.*;
+import static me.w41k3r.shopkeepersaddon.General.UpdateListeners.refreshShops;
 import static me.w41k3r.shopkeepersaddon.Main.*;
 import static org.bukkit.Bukkit.getOfflinePlayer;
 
@@ -98,14 +101,18 @@ public class Utils {
             ItemMeta meta = itemStack.getItemMeta();
 
             // Handle display name
-            String displayName = (String) metaData.get("display-name");
-            if (displayName != null) {
-                meta.setDisplayName(displayName);
+            String displayNameJson = (String) metaData.get("display-name");
+            if (displayNameJson != null) {
+                meta.setDisplayName(parseJsonToText(displayNameJson)); // Parse JSON display name
             }
 
             // Handle lore
-            List<String> lore = (List<String>) metaData.get("lore");
-            if (lore != null) {
+            List<String> loreJsonList = (List<String>) metaData.get("lore");
+            if (loreJsonList != null) {
+                List<String> lore = new ArrayList<>();
+                for (String loreJson : loreJsonList) {
+                    lore.add(parseJsonToText(loreJson)); // Parse JSON lore entries
+                }
                 meta.setLore(lore);
             }
 
@@ -141,6 +148,37 @@ public class Utils {
 
         return itemStack;
     }
+
+    // Helper method to parse JSON-formatted strings to plain text
+    private static String parseJsonToText(String jsonString) {
+        try {
+            JsonElement jsonElement = JsonParser.parseString(jsonString);
+            StringBuilder builder = new StringBuilder();
+
+            // Handle if the root is an object with 'text' and 'extra' fields
+            if (jsonElement.isJsonObject()) {
+                // Parse the 'text' field
+                if (jsonElement.getAsJsonObject().has("text")) {
+                    builder.append(jsonElement.getAsJsonObject().get("text").getAsString());
+                }
+
+                // Parse the 'extra' array
+                if (jsonElement.getAsJsonObject().has("extra")) {
+                    for (JsonElement extraElement : jsonElement.getAsJsonObject().get("extra").getAsJsonArray()) {
+                        if (extraElement.isJsonObject() && extraElement.getAsJsonObject().has("text")) {
+                            builder.append(extraElement.getAsJsonObject().get("text").getAsString());
+                        }
+                    }
+                }
+            }
+
+            return builder.toString();
+        } catch (Exception e) {
+            debugLog("Failed to parse JSON: " + jsonString);
+            return jsonString; // Fallback to raw string if parsing fails
+        }
+    }
+
 
 
 
@@ -323,11 +361,11 @@ public class Utils {
     }
 
     static String sanitizedName(String name) {
-        String sanitzedName = name.replaceAll("[^a-zA-Z0-9]", "");
-        if (sanitzedName.length() > 16) {
-            sanitzedName = sanitzedName.substring(0, 15);
+        String sanitizedName = name.replaceAll("[^a-zA-Z0-9_]", "");
+        if (sanitizedName.length() > 16) {
+            sanitizedName = sanitizedName.substring(0, 15);
         }
-        return sanitzedName;
+        return sanitizedName;
     }
 
     static ItemStack getIcon(String uniqueID, String key, String type) {
@@ -336,7 +374,7 @@ public class Utils {
         switch (key) {
             case "adminshop":
                 AdminShopkeeper shopkeeper = (AdminShopkeeper) shopkeepersAPI.getShopkeeperByUniqueId(UUID.fromString(uniqueID));
-                headItem = getHead(getUUIDFromName(type, true) , shopkeeper.getName().isEmpty() ? "Admin" : shopkeeper.getName());
+                headItem = getHead(getUUIDFromName(sanitizedName(type), true) , shopkeeper.getName().isEmpty() ? "Admin" : sanitizedName(shopkeeper.getName()));
                 headMeta = headItem.getItemMeta();
                 headMeta.setDisplayName(shopkeeper.getName().isEmpty() ? "Admin Shop" : shopkeeper.getName());
                 headMeta = setData(headMeta, "shopkeeperID", uniqueID);
@@ -366,6 +404,9 @@ public class Utils {
                 headMeta = headItem.getItemMeta();
                 headMeta.setDisplayName(playerShopkeeper.getOwnerName() + "'s Shop");
                 headMeta = setData(headMeta, "ownerID", getUUIDFromName(playerShopkeeper.getOwnerName(), false).toString());
+                headItem.setItemMeta(headMeta);
+                debugLog("Setting Playershop meta for " + playerShopkeeper.getOwnerName());
+                headMeta = setLore(headMeta, getShopTitle(playerShopkeeper.getOwnerName()));
                 headItem.setItemMeta(headMeta);
                 return headItem;
         }
@@ -516,9 +557,45 @@ public class Utils {
         return location;
     }
 
+    public static String getShopTitle(String playerName) {
+        String url = "jdbc:sqlite:" + plugin.getDataFolder() + "/shops.db";
+        String shopTitle = null;
+
+        try (Connection conn = DriverManager.getConnection(url)) {
+            if (conn != null) {
+                // Fetch the shop title for the player using their UUID
+                String querySQL = "SELECT shop_title FROM shops WHERE owner_uuid = ?";
+
+                try (PreparedStatement pstmt = conn.prepareStatement(querySQL)) {
+                    String playerUUID = getUUIDFromName(playerName, false).toString();
+                    pstmt.setString(1, playerUUID);
+
+                    try (ResultSet rs = pstmt.executeQuery()) {
+                        if (rs.next()) {
+                            shopTitle = rs.getString("shop_title");
+                            shopTitle = "§e" + shopTitle.substring(1, shopTitle.length() - 1);
+                            debugLog("Shop title found: " + shopTitle);
+                        } else {
+                            debugLog("No shop found for player UUID: " + playerUUID);
+                        }
+                    }
+                }
+            }
+            if (shopTitle == null) {
+                shopTitle = setting().getString("messages.no-shop");
+            }
+        } catch (SQLException e) {
+            shopTitle = setting().getString("messages.no-shop");
+            return shopTitle;
+        }
+
+        return shopTitle;
+    }
 
 
-    public static void setShop(Player player, String description) {
+
+
+    public static void setShop(String playerName, String description, Player player) {
         String url = "jdbc:sqlite:" + plugin.getDataFolder() + "/shops.db";
 
         try (Connection conn = DriverManager.getConnection(url)) {
@@ -540,7 +617,7 @@ public class Utils {
                 }
 
                 // Insert or update shop data
-                String playerUUID = player.getUniqueId().toString();
+                String playerUUID = getUUIDFromName(playerName, false).toString();
                 debugLog("Player UUID: " + playerUUID);
                 String insertOrUpdateSQL = "INSERT INTO shops (owner, owner_uuid, shop_title, x, y, z, world, yaw, pitch) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
@@ -554,7 +631,7 @@ public class Utils {
                         "pitch = excluded.pitch";
 
                 try (PreparedStatement pstmt = conn.prepareStatement(insertOrUpdateSQL)) {
-                    pstmt.setString(1, player.getName());
+                    pstmt.setString(1, playerName);
                     pstmt.setString(2, playerUUID);
                     pstmt.setString(3, description);
                     pstmt.setDouble(4, player.getLocation().getX());
@@ -569,6 +646,7 @@ public class Utils {
                     sendPlayerMessage(player,setting().getString("messages.shop-set"));
                 }
             }
+            refreshShops();
         } catch (SQLException e) {
             e.printStackTrace();
         }

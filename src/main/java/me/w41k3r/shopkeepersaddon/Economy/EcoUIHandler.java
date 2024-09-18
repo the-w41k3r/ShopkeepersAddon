@@ -1,5 +1,6 @@
 package me.w41k3r.shopkeepersaddon.Economy;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.TradeSelectEvent;
 import org.bukkit.inventory.ItemStack;
@@ -9,8 +10,10 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.Objects;
 
 import static me.w41k3r.shopkeepersaddon.Economy.EcoUtils.hasMoney;
+import static me.w41k3r.shopkeepersaddon.Economy.EcoUtils.removeEconomyItem;
 import static me.w41k3r.shopkeepersaddon.General.Utils.getPrice;
 import static me.w41k3r.shopkeepersaddon.General.Utils.hasData;
+import static me.w41k3r.shopkeepersaddon.Main.*;
 
 public class EcoUIHandler {
 
@@ -29,17 +32,8 @@ public class EcoUIHandler {
         }
 
         event.getInventory().setItem(slot, toAdd);
-        clearCurrencyItems(event.getWhoClicked().getInventory());
+        Bukkit.getScheduler().runTaskLater(plugin, () -> removeEconomyItem((Player) event.getWhoClicked()), 1);
     }
 
-
-    static void clearCurrencyItems(PlayerInventory inventory){
-        int invSize = inventory.getSize();
-        for (int i = 0; i < invSize; i++){
-            if (!hasData(inventory.getItem(i), "itemprice", PersistentDataType.DOUBLE)) continue;
-            inventory.remove(Objects.requireNonNull(inventory.getItem(i)));
-        }
-
-    }
 
 }
