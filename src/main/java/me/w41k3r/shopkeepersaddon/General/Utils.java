@@ -1,5 +1,7 @@
 package me.w41k3r.shopkeepersaddon.General;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -23,10 +25,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -149,20 +148,16 @@ public class Utils {
         return itemStack;
     }
 
-    // Helper method to parse JSON-formatted strings to plain text
     private static String parseJsonToText(String jsonString) {
         try {
             JsonElement jsonElement = JsonParser.parseString(jsonString);
             StringBuilder builder = new StringBuilder();
 
-            // Handle if the root is an object with 'text' and 'extra' fields
             if (jsonElement.isJsonObject()) {
-                // Parse the 'text' field
                 if (jsonElement.getAsJsonObject().has("text")) {
                     builder.append(jsonElement.getAsJsonObject().get("text").getAsString());
                 }
 
-                // Parse the 'extra' array
                 if (jsonElement.getAsJsonObject().has("extra")) {
                     for (JsonElement extraElement : jsonElement.getAsJsonObject().get("extra").getAsJsonArray()) {
                         if (extraElement.isJsonObject() && extraElement.getAsJsonObject().has("text")) {
@@ -230,22 +225,28 @@ public class Utils {
     public static ItemStack getCustomHead(String name, String texture) {
         ItemStack head = new ItemStack(Material.PLAYER_HEAD, 1);
         SkullMeta headMeta = (SkullMeta) head.getItemMeta();
-        GameProfile profile = new GameProfile(UUID.randomUUID(), name);
-        profile.getProperties().put("textures", new Property("textures", texture));
 
         try {
-            Field profileField = headMeta.getClass().getDeclaredField("profile");
-            profileField.setAccessible(true);
-            profileField.set(headMeta, profile);  // Set the profile field to your custom GameProfile
-
-        } catch (NoSuchFieldException | IllegalAccessException e1) {
-            e1.printStackTrace();
+            if (isPaperAvailable()) {
+                PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID(), name);
+                profile.getProperties().add(new ProfileProperty("textures", texture));
+                headMeta.setPlayerProfile(profile);
+            } else {
+                GameProfile profile = new GameProfile(UUID.randomUUID(), name);
+                profile.getProperties().put("textures", new Property("textures", texture));
+                Field profileField = headMeta.getClass().getDeclaredField("profile");
+                profileField.setAccessible(true);
+                profileField.set(headMeta, profile);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
+
         head.setItemMeta(headMeta);
-        
         return head;
     }
+
 
     public static ItemStack getHead(UUID playerUUID, String playerName) {
         if (heads.containsKey(sanitizedName(playerName))) {
@@ -256,16 +257,18 @@ public class Utils {
         SkullMeta headMeta = (SkullMeta) head.getItemMeta();
 
         if (headMeta != null) {
-            GameProfile profile = new GameProfile(playerUUID, sanitizedName(playerName)); // UUID only, name is not used
-            // Use default skin data; replace with actual base64 skin data if available
-            profile.getProperties().put("textures", new Property("textures", "<base64-skin-data>"));
-
             try {
-                Field profileField = headMeta.getClass().getDeclaredField("profile");
-                profileField.setAccessible(true);
-                profileField.set(headMeta, profile);
-
-
+                if (isPaperAvailable()) {
+                    PlayerProfile profile = Bukkit.createProfile(playerUUID, sanitizedName(playerName));
+                    profile.getProperties().add(new ProfileProperty("textures", "<base64-skin-data>"));
+                    headMeta.setPlayerProfile(profile);
+                } else {
+                    GameProfile profile = new GameProfile(playerUUID, sanitizedName(playerName));
+                    profile.getProperties().put("textures", new Property("textures", "<base64-skin-data>"));
+                    Field profileField = headMeta.getClass().getDeclaredField("profile");
+                    profileField.setAccessible(true);
+                    profileField.set(headMeta, profile);
+                }
                 head.setItemMeta(headMeta);
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 e.printStackTrace();
@@ -275,6 +278,29 @@ public class Utils {
         heads.put(sanitizedName(playerName), head);
         return head;
     }
+
+    static String getShopName(ItemStack head) {
+        SkullMeta headMeta = (SkullMeta) head.getItemMeta();
+        String playerName = "null";
+
+        if (headMeta != null) {
+            try {
+                if (isPaperAvailable()) {
+                    PlayerProfile profile = headMeta.getPlayerProfile();
+                    playerName = profile != null ? profile.getName() : playerName;
+                } else {
+                    Field profileField = headMeta.getClass().getDeclaredField("profile");
+                    profileField.setAccessible(true);
+                    GameProfile profile = (GameProfile) profileField.get(headMeta);
+                    playerName = profile != null ? profile.getName() : playerName;
+                }
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return playerName;
+    }
+
     public static UUID convertToJavaUUID(String mojangUUID) {
         if (mojangUUID.length() != 32) {
             throw new IllegalArgumentException("Invalid UUID string length");
@@ -287,58 +313,68 @@ public class Utils {
                 mojangUUID.substring(20);
         return UUID.fromString(formattedUUID);
     }
-
-    static String getShopName(ItemStack head) {
-        SkullMeta headMeta = (SkullMeta) head.getItemMeta();
-        GameProfile profile = null;
+    public static boolean isPaperAvailable() {
         try {
-            Field profileField = headMeta.getClass().getDeclaredField("profile");
-            profileField.setAccessible(true);
-            profile = (GameProfile) profileField.get(headMeta);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
+            Class.forName("com.destroystokyo.paper.profile.PlayerProfile");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
         }
-        return profile == null ? "null" : profile.getName();
     }
 
     public static UUID getUUIDFromName(String playerName, boolean online) {
         debugLog("Getting UUID for " + playerName);
+        File dataFolder = plugin.getDataFolder();
+        File onlineCache = new File(dataFolder, "OnlineCache.yml");
+        File offlineCache = new File(dataFolder, "OfflineCache.yml");
 
         if (online) {
             debugLog(onlineUUIDs.toString());
+
+            if (onlineCache.exists()) {
+                try (FileInputStream fis = new FileInputStream(onlineCache)) {
+                    Yaml yaml = new Yaml();
+                    Map<String, String> obj = yaml.load(fis);
+                    if (obj != null && obj.containsKey(playerName)) {
+                        return UUID.fromString(obj.get(playerName));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
             if (onlineUUIDs.containsKey(playerName)) {
                 return onlineUUIDs.get(playerName);
             }
-            final String STEVE_UUID = "8667ba71b85a4004af54457a9734eed7";
-            try {
-                // Construct the URL
-                String urlString = "https://api.mojang.com/users/profiles/minecraft/" + playerName;
-                URL url = new URL(urlString);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-                // Set up the connection
+            final String STEVE_UUID = "8667ba71b85a4004af54457a9734eed7";
+
+            try {
+                String urlString = "https://api.mojang.com/users/profiles/minecraft/" + playerName;
+                HttpURLConnection connection = (HttpURLConnection) new URL(urlString).openConnection();
+
                 connection.setRequestMethod("GET");
                 connection.setRequestProperty("Accept", "application/json");
 
-                // Read the response
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = in.readLine()) != null) {
-                    response.append(line);
-                }
-                in.close();
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        response.append(line);
+                    }
 
-                // Parse the JSON response using Gson
-                JsonObject jsonResponse = JsonParser.parseString(response.toString()).getAsJsonObject();
+                    JsonObject jsonResponse = JsonParser.parseString(response.toString()).getAsJsonObject();
 
-                // Check if the response contains an "id" field
-                if (jsonResponse.has("id")) {
-                    onlineUUIDs.put(playerName, convertToJavaUUID(jsonResponse.get("id").getAsString()));
-                    return convertToJavaUUID(jsonResponse.get("id").getAsString());  // Return the UUID if found
-                } else {
-                    // Handle the error response (e.g., username not found)
-                    return convertToJavaUUID(STEVE_UUID);
+                    if (jsonResponse.has("id")) {
+                        String uuidString = jsonResponse.get("id").getAsString();
+                        onlineUUIDs.put(playerName, convertToJavaUUID(uuidString));
+
+                        // Save the UUID to the cache file
+                        saveToYAML(onlineCache, playerName, uuidString);
+                        return convertToJavaUUID(uuidString);
+                    } else {
+                        return convertToJavaUUID(STEVE_UUID);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -346,19 +382,61 @@ public class Utils {
             }
         } else {
             debugLog(offlineUUIDs.toString());
+
+            if (offlineCache.exists()) {
+                try (FileInputStream fis = new FileInputStream(offlineCache)) {
+                    Yaml yaml = new Yaml();
+                    Map<String, String> obj = yaml.load(fis);
+                    if (obj != null && obj.containsKey(playerName)) {
+                        return UUID.fromString(obj.get(playerName));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
             if (offlineUUIDs.containsKey(playerName)) {
                 return offlineUUIDs.get(playerName);
             }
+
             OfflinePlayer player = getOfflinePlayer(playerName);
             if (player != null) {
+                String uuidString = player.getUniqueId().toString();
+                // Save the UUID to the cache file
+                saveToYAML(offlineCache, playerName, uuidString);
                 offlineUUIDs.put(playerName, player.getUniqueId());
                 return player.getUniqueId();
             }
         }
-
-
         return null;
     }
+
+    private static void saveToYAML(File cacheFile, String playerName, String uuidString) {
+        try {
+            Map<String, String> obj;
+            // Read existing data if it exists
+            if (cacheFile.exists()) {
+                try (FileInputStream fis = new FileInputStream(cacheFile)) {
+                    Yaml yaml = new Yaml();
+                    obj = yaml.load(fis);
+                    if (obj == null) {
+                        obj = new HashMap<>();
+                    }
+                }
+            } else {
+                obj = new HashMap<>();
+            }
+            obj.put(playerName, uuidString); // Update the map
+            // Write updated map back to file
+            try (FileOutputStream fos = new FileOutputStream(cacheFile)) {
+                Yaml yaml = new Yaml();
+                yaml.dump(obj, new OutputStreamWriter(fos));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     static String sanitizedName(String name) {
         String sanitizedName = name.replaceAll("[^a-zA-Z0-9_]", "");
