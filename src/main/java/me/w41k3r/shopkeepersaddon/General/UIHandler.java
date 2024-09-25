@@ -64,21 +64,10 @@ public class UIHandler {
         Map<String, Object> recipes = (Map<String, Object>) (obj.containsKey("recipes") ? obj.get("recipes") : obj.get("offers"));
         for (Map.Entry<String, Object> entry : recipes.entrySet()) {
             Map<String, Object> recipeData = (Map<String, Object>) entry.getValue();
-            ItemStack item;
-
-            if (obj.get("type").toString().equalsIgnoreCase("book")){
-                continue;
-            }
-            debugLog("ShopType: " + obj.get("type"));
-
-            if (obj.get("type").toString().equalsIgnoreCase("buy") || obj.get("type").toString().equalsIgnoreCase("sell")){
-                item = createItemStackFromYaml((Map<String, Object>) recipeData.get("item"));
-            } else {
-                item = createItemStackFromYaml((Map<String, Object>) recipeData.get("resultItem"));
-            }
+            ItemStack item = createItemStackFromYaml((Map<String, Object>) recipeData.get("resultItem"));
 
             if (item == null) {
-                debugLog("Failed to create item for " + obj.get("uniqueId"));
+                debugLog("Failed to create ItemStack from YAML");
                 continue;
             }
 
@@ -244,7 +233,7 @@ public class UIHandler {
         selectPlayerShopListType.setItem(11, playerShopsIcon);
         ItemStack playerItemsIcon = getCustomHead("PlayerItemsUI", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODU0Nzg0ZmI0NzM0Nzg0NzQzYmYzMDI2NDlmYjU3MDAxNzFlYWY2Njc4NjFhYjJiMjVjZTlhZWU3YTEzODE2MCJ9fX0=");
         ItemMeta playerItemsIconMeta = playerItemsIcon.getItemMeta();
-        playerItemsIconMeta.setDisplayName(configData("messages.shops.player-items-ui"));
+        playerItemsIconMeta.setDisplayName(configData("messages.shops.players-item-shops-ui"));
         playerItemsIcon.setItemMeta(playerItemsIconMeta);
         selectPlayerShopListType.setItem(15, playerItemsIcon);
 
@@ -257,7 +246,7 @@ public class UIHandler {
         selectAdminShopListType.setItem(11, adminShopsIcon);
         ItemStack adminItemsIcon = getCustomHead("AdminItemsUI", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODU0Nzg0ZmI0NzM0Nzg0NzQzYmYzMDI2NDlmYjU3MDAxNzFlYWY2Njc4NjFhYjJiMjVjZTlhZWU3YTEzODE2MCJ9fX0=");
         ItemMeta adminItemsIconMeta = adminItemsIcon.getItemMeta();
-        adminItemsIconMeta.setDisplayName(configData("messages.shops.admin-items-ui"));
+        adminItemsIconMeta.setDisplayName(configData("messages.shops.admin-item-shops-ui"));
         adminItemsIcon.setItemMeta(adminItemsIconMeta);
         selectAdminShopListType.setItem(15, adminItemsIcon);
 

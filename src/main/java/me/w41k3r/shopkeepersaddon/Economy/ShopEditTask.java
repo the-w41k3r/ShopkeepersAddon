@@ -1,11 +1,8 @@
 package me.w41k3r.shopkeepersaddon.Economy;
 
 import com.nisovin.shopkeepers.api.ShopkeepersAPI;
-import com.nisovin.shopkeepers.api.events.ShopkeeperEditedEvent;
 import com.nisovin.shopkeepers.api.shopkeeper.Shopkeeper;
-import com.nisovin.shopkeepers.api.shopkeeper.TradingRecipe;
 import com.nisovin.shopkeepers.api.shopkeeper.player.PlayerShopkeeper;
-import com.nisovin.shopkeepers.api.ui.UISession;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -13,12 +10,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -27,7 +21,8 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 import static me.w41k3r.shopkeepersaddon.Economy.EcoUtils.getCurrencyItem;
 import static me.w41k3r.shopkeepersaddon.Economy.EcoUtils.removeEconomyItem;
-import static me.w41k3r.shopkeepersaddon.General.Utils.*;
+import static me.w41k3r.shopkeepersaddon.General.Utils.debugLog;
+import static me.w41k3r.shopkeepersaddon.General.Utils.hasData;
 import static me.w41k3r.shopkeepersaddon.Main.*;
 
 public class ShopEditTask implements Listener, PriceInputCallback {
@@ -36,8 +31,6 @@ public class ShopEditTask implements Listener, PriceInputCallback {
 
     private final Shopkeeper shopkeeper;
 
-    static int page = 1;
-
 
     public ShopEditTask(Player player, Shopkeeper shopkeeper) {
         this.player = player;
@@ -45,7 +38,6 @@ public class ShopEditTask implements Listener, PriceInputCallback {
     }
 
     public void startEdit(){
-
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
@@ -58,7 +50,9 @@ public class ShopEditTask implements Listener, PriceInputCallback {
         }
 
         if (hasData(event.getCurrentItem(), "itemprice", PersistentDataType.DOUBLE) ){
+
             debugLog(event.getCursor().toString());
+
             if (event.getCursor() != null && !event.getCursor().getType().isAir()){
                 event.setCancelled(true);
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -68,7 +62,6 @@ public class ShopEditTask implements Listener, PriceInputCallback {
                 }, 1);
                 return;
             }
-            page = event.getClickedInventory().getItem(31).getAmount();
             SetPriceTask setPriceTask = new SetPriceTask(player, event.getSlot(), this);
             setPriceTask.startEdit();
             sendPlayerMessage(player,setting().getString("messages.set-price"));
@@ -121,7 +114,15 @@ public class ShopEditTask implements Listener, PriceInputCallback {
         ItemStack item = getCurrencyItem(1.0);
         inventory.setItem(slot, item);
     }
-    
+
+    @Override
+    public void onPriceSet(double price, int slot) {
+        sendPlayerMessage(player,setting().getString("messages.price-changed").replace("%price%", String.valueOf(price)));
+        shopkeeper.openEditorWindow(player);
+        ItemStack priceItem = getCurrencyItem(price);
+        player.getOpenInventory().getTopInventory().setItem(slot, priceItem);
+    }
+
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
 
@@ -132,29 +133,6 @@ public class ShopEditTask implements Listener, PriceInputCallback {
         if (ShopkeepersAPI.getUIRegistry().getUISession(player) != null){
             HandlerList.unregisterAll(this);
             Bukkit.getScheduler().runTaskLater(plugin, () -> removeEconomyItem(player), 1);
-        }
-    }
-
-    @Override
-    public void onPriceSet(double price, int slot, int rawSlot) {
-        sendPlayerMessage(player,setting().getString("messages.price-changed").replace("%price%", String.valueOf(price)));
-        shopkeeper.openEditorWindow(player);
-        while (player.getOpenInventory().getTopInventory().getItem(31).getAmount() != page) {
-            simulateClick(player, player.getOpenInventory().getTopInventory(), 35);
-        }
-        ItemStack priceItem = getCurrencyItem(price);
-        player.getOpenInventory().getTopInventory().setItem(rawSlot, priceItem);
-    }
-
-
-    public void simulateClick(Player player, Inventory inventory, int slot) {
-        ItemStack item = inventory.getItem(slot);
-
-        if (item != null) {
-            InventoryView view = player.getOpenInventory();
-            InventoryClickEvent clickEvent = new InventoryClickEvent(view, InventoryType.SlotType.CONTAINER, slot, ClickType.LEFT, null);
-            Bukkit.getPluginManager().callEvent(clickEvent);
-
         }
     }
 }

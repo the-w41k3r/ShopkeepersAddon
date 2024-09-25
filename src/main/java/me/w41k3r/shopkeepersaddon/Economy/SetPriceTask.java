@@ -40,10 +40,8 @@ public class SetPriceTask implements Listener {
             double price = Double.parseDouble(event.getMessage());
 
             event.setCancelled(true);
-
             Bukkit.getScheduler().runTask(plugin, () -> {
-
-                callback.onPriceSet(price, slot>17 ? slot-18 : slot, slot);
+                callback.onPriceSet(price, slot);
                 HandlerList.unregisterAll(this);
             });
 
