@@ -26,7 +26,6 @@ public class Listeners implements Listener {
             return;
         }
 
-        debugLog("Clicked Slot: " + event.getSlot() + " Clicked Item: " + Objects.requireNonNull(event.getCurrentItem().getItemMeta()).getDisplayName());
         event.setCancelled(true);
         if (hasData(event.getCurrentItem(), "closeInventory", PersistentDataType.STRING)) {
             event.getWhoClicked().closeInventory();
@@ -35,12 +34,6 @@ public class Listeners implements Listener {
 
         ItemStack item = event.getCurrentItem();
         item.setAmount(1);
-
-        if (itemInventories.containsKey(item)){
-            HashMap<Integer, Inventory> inv = itemInventories.get(item);
-            event.getWhoClicked().openInventory(inv.get(0));
-            return;
-        }
 
         if (hasData(event.getCurrentItem(), "shopkeeperID", PersistentDataType.STRING)){
             teleportToShop((Player) event.getWhoClicked(), getData(event.getCurrentItem(), "shopkeeperID"), true);
@@ -55,26 +48,39 @@ public class Listeners implements Listener {
         }
 
 
+        if (event.getSlot() < 44
+                && (playerShopItems.containsKey(item) || adminShopItems.containsKey(item))
+        ){
+            Inventory toOpen = playerShopItems.containsKey(item) ? playerShopItems.get(item).get(0) : adminShopItems.get(item).get(0);
+            event.getWhoClicked().openInventory(toOpen);
+        }
+
+
+
 
         if (event.getCurrentItem().getType().equals(Material.PLAYER_HEAD)){
-            if(getShopName(event.getCurrentItem()).equals("null")){
+            if(getShopName(event.getCurrentItem()).equals("null")
+            ){
                 return;
             }
 
             if (getShopName(event.getCurrentItem()).equals("NextPage") || getShopName(event.getCurrentItem()).equals("PreviousPage")) {
                 int newPage = getShopName(event.getCurrentItem()).equals("NextPage") ? Integer.parseInt(getData(event.getClickedInventory().getItem(49), "currentPage")) + 1 : Integer.parseInt(getData(event.getClickedInventory().getItem(49), "currentPage")) - 1;
-                switch (getData(event.getClickedInventory().getItem(49), "inventoryType")){
-                    case "admin":
-                        event.getWhoClicked().openInventory(allAdminShops.get(newPage));
+                switch (getData(event.getClickedInventory().getItem(49), "inventoryType").toLowerCase()){
+                    case "admin-shops":
+                        event.getWhoClicked().openInventory(adminShops.get(newPage));
                         break;
-                    case "player":
-                        event.getWhoClicked().openInventory(allPlayerShops.get(newPage));
+                    case "player-shops":
+                        event.getWhoClicked().openInventory(playerShops.get(newPage));
                         break;
-                    case "adminItems":
-                        event.getWhoClicked().openInventory(allAdminItems.get(newPage));
+                    case "admin-items":
+                        event.getWhoClicked().openInventory(adminItems.get(newPage));
                         break;
-                    case "playerItems":
-                        event.getWhoClicked().openInventory(allPlayerItems.get(newPage));
+                    case "player-items":
+                        event.getWhoClicked().openInventory(playerItems.get(newPage));
+                        break;
+                    case "admin-sellers":
+                        event.getWhoClicked().openInventory(playerShopItems.get(event.getClickedInventory().getItem(47)).get(newPage));
                         break;
                 }
             }
@@ -84,27 +90,27 @@ public class Listeners implements Listener {
                 switch (getShopName(event.getCurrentItem())) {
                     case "AdminSelUI":
                         debugLog("Opening Admin Section");
-                        open = selectAdminShopListType;
+                        open = adminShopTypes;
                         break;
                     case "PlayerSelUI":
                         debugLog("Opening Player Section");
-                        open = selectPlayerShopListType;
+                        open = playerShopTypes;
                         break;
                     case "AdminShopsUI":
                         debugLog("Opening Admin Shops");
-                        open = allAdminShops.get(0);
+                        open = adminShops.get(0);
                         break;
                     case "AdminItemsUI":
                         debugLog("Opening Admin Items Shops");
-                        open = allAdminItems.get(0);
+                        open = adminItems.get(0);
                         break;
                     case "PlayerShopsUI":
                         debugLog("Opening Player Shops");
-                        open = allPlayerShops.get(0);
+                        open = playerShops.get(0);
                         break;
                     case "PlayerItemsUI":
                         debugLog("Opening Player Items Shops");
-                        open = allPlayerItems.get(0);
+                        open = playerItems.get(0);
                         break;
                     default:
                         return;
@@ -120,11 +126,4 @@ public class Listeners implements Listener {
 
         }
     }
-
-
-
-
-
-
-
 }

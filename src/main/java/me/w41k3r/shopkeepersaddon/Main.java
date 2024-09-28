@@ -37,10 +37,12 @@ public final class Main extends JavaPlugin {
         plugin = this;
         ShopkeepersInstance = getServer().getPluginManager().getPlugin("Shopkeepers");
         prefix = setting().getString("messages.prefix");
-        if (!setupVault()) {
-            this.getLogger().severe("Disabling due to Vault dependency error!");
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
+        if (plugin.getConfig().getBoolean("economy.enabled")) {
+            if (!setupVault()) {
+                this.getLogger().severe("Disabling due to Vault dependency error!");
+                Bukkit.getPluginManager().disablePlugin(this);
+                return;
+            }
         }
 
         debugLog("Shopkeepers plugin found, loading shops...");

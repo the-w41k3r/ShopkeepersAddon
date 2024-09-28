@@ -1,9 +1,13 @@
 package me.w41k3r.shopkeepersaddon.General;
 
+import com.mojang.authlib.exceptions.MinecraftClientHttpException;
 import com.nisovin.shopkeepers.api.events.ShopkeeperEditedEvent;
 import com.nisovin.shopkeepers.api.shopkeeper.Shopkeeper;
 import com.nisovin.shopkeepers.api.shopkeeper.TradingRecipe;
 import com.nisovin.shopkeepers.api.shopkeeper.admin.AdminShopkeeper;
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
@@ -11,65 +15,64 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static me.w41k3r.shopkeepersaddon.General.UIHandler.*;
 import static me.w41k3r.shopkeepersaddon.General.Utils.*;
-import static me.w41k3r.shopkeepersaddon.Main.ShopkeepersInstance;
-import static me.w41k3r.shopkeepersaddon.Main.plugin;
+import static me.w41k3r.shopkeepersaddon.Main.*;
 
 public class UpdateListeners implements Listener {
 
 
-    @EventHandler
-    public void ShopkeeperEdited(ShopkeeperEditedEvent event) {
-        refreshShops();
-    }
 
 
-    public static void refreshShops(){
+
+    static void startUpdates() {
         new BukkitRunnable() {
             @Override
             public void run() {
-                File dataFolder = ShopkeepersInstance.getDataFolder();
-                File saveFolder = new File(dataFolder, "data/save.yml");
-                debugLog("Loading shops from " + saveFolder);
-
-                if (!saveFolder.exists()) {
-                    errorLog("Save file does not exist: " + saveFolder);
-                    return;
-                }
-
-                Map<String, Object> obj = null;
-                try (FileInputStream fis = new FileInputStream(saveFolder)) {
-                    Yaml yaml = new Yaml();
-                    obj = yaml.load(fis);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return;
-                }
-                initializeUIs();
-                for (String key : obj.keySet()) {
-                    if (key.equalsIgnoreCase("data-version")) {
-                        continue;
-                    }
-                    Map<String, Object> shopkeeper = (Map<String, Object>) obj.get(key);
-                    addShopstoUI(shopkeeper);  // This interacts with the Bukkit API
-                    addItemsToUI(shopkeeper);  // This interacts with the Bukkit API
-                }
-
-                debugLog("Shops loaded successfully!");
-
+                refreshShops();
             }
-        }.runTaskAsynchronously(plugin);  // Run the file loading asynchronously
+        }.runTaskTimerAsynchronously(plugin, setting().getLong("refresh-rate") * 20, setting().getLong("refresh-rate") * 20);
     }
+
+
+    static void refreshShops() {
+        FileConfiguration config;
+        try {
+            config = YamlConfiguration.loadConfiguration(new File(ShopkeepersInstance.getDataFolder(), "data/save.yml"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+
+        adminItemsList.clear();
+        adminShops.clear();
+        adminItems.clear();
+        adminHeads.clear();
+        adminShopItems.clear();
+
+        playerItemsList.clear();
+        playerShops.clear();
+        playerItems.clear();
+        playerHeads.clear();
+        playerShopItems.clear();
+
+        for (String key : config.getKeys(false)) {
+            if (key.equalsIgnoreCase("data-version")) {
+                continue;
+            }
+            readyItemsUI(config, key);
+        }
+    }
+
+
 
 
 }

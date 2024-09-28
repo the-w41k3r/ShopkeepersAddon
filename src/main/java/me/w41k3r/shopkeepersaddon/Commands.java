@@ -1,17 +1,14 @@
 package me.w41k3r.shopkeepersaddon;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Arrays;
 
-import static me.w41k3r.shopkeepersaddon.General.UIHandler.*;
-import static me.w41k3r.shopkeepersaddon.General.UpdateListeners.refreshShops;
+import static me.w41k3r.shopkeepersaddon.General.UIHandler.HomePage;
 import static me.w41k3r.shopkeepersaddon.General.Utils.*;
 import static me.w41k3r.shopkeepersaddon.Main.sendPlayerMessage;
 import static me.w41k3r.shopkeepersaddon.Main.setting;
@@ -55,7 +52,7 @@ public class Commands implements CommandExecutor {
 
         if (label.equalsIgnoreCase("shops")){
             try {
-                ((Player) commandSender).openInventory(ShopsUI);
+                ((Player) commandSender).openInventory(HomePage);
             } catch (Exception e) {
                 sendPlayerMessage(player,setting().getString("messages.no-shop"));
             }
@@ -69,7 +66,6 @@ public class Commands implements CommandExecutor {
 
         if (strings[0].equalsIgnoreCase("reload")) {
             Main.plugin.reloadConfig();
-            refreshShops();
             sendPlayerMessage(player,"§6Shops reloaded!");
             return true;
         }

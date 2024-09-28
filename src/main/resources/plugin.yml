@@ -2,8 +2,8 @@ name: ShopkeepersAddon
 version: '${project.version}'
 main: me.w41k3r.shopkeepersaddon.Main
 api-version: 1.16
-depend: [Shopkeepers, Vault]
-softdepend: [Essentials, CMI]
+depend: [Shopkeepers]
+softdepend: [Essentials, CMI, Vault]
 commands:
   shopkeepersaddon:
     description: ShopkeepersAddon command

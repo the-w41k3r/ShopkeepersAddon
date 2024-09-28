@@ -1,7 +1,7 @@
 #----------------------------------------------
 # DO NOT TOUCH TEHSE UNLESS YOU KNOW WHAT YOU'RE DOING!
 debug: false
-version: 2.23.0.1
+version: 2.23.0.3
 #----------------------------------------------
 
 # You can edit from here:
@@ -24,6 +24,9 @@ admin-shop:
     allow-movement: false
   # Allow remote open admin shops
   remote: false
+
+# How often should the shops refresh? (in seconds) keep it above 30 seconds to avoid lag.
+refresh-rate: 60
 
 economy:
     # Enable economy support
@@ -67,8 +70,10 @@ messages:
   shops:
     shops-ui: "§8§lShops"
     player-shops-ui: "§8§lPlayer Shops"
-    player-items-ui: "§8§lPlayer Item Shops"
+    player-items-ui: "§8§lPlayer Items"
     admin-shops-ui: "§8§lAdmin Shops"
-    admin-items-ui: "§8§lAdmin Item Shops"
+    admin-items-ui: "§8§lAdmin Items"
     players-list-ui: "§8§lPlayers"
+    admin-sellers-ui: "§8§lAdmin Sellers"
+    player-sellers-ui: "§8§lPlayer Sellers"
 
