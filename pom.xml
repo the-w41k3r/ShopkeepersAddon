@@ -5,7 +5,7 @@
 
     <groupId>me.w41k3r</groupId>
     <artifactId>ShopkeepersAddon</artifactId>
-    <version>2.23.0.3</version>
+    <version>2.23.3.1</version>
     <packaging>jar</packaging>
 
     <name>ShopkeepersAddon</name>
@@ -70,7 +70,7 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <classifier>SNAPSHOT-23V3A</classifier>
+                            <classifier>SNAPSHOT-233V1A</classifier>
                             <outputDirectory>B:\Test\plugins</outputDirectory>
                             <finalName>ShopkeepersAddon</finalName>
                         </configuration>
@@ -142,7 +142,7 @@
         <dependency>
             <groupId>com.nisovin.shopkeepers</groupId>
             <artifactId>ShopkeepersAPI</artifactId>
-            <version>2.23.0</version>
+            <version>2.23.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

@@ -12,6 +12,7 @@ import com.nisovin.shopkeepers.api.shopkeeper.Shopkeeper;
 import com.nisovin.shopkeepers.api.shopkeeper.ShopkeeperRegistry;
 import com.nisovin.shopkeepers.api.shopkeeper.admin.AdminShopkeeper;
 import com.nisovin.shopkeepers.api.shopkeeper.player.PlayerShopkeeper;
+import me.w41k3r.shopkeepersaddon.Main;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -24,13 +25,17 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.*;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static me.w41k3r.shopkeepersaddon.General.UIHandler.*;
 import static me.w41k3r.shopkeepersaddon.General.UpdateListeners.startUpdates;
@@ -41,6 +46,8 @@ public class Utils {
     public static ShopkeeperRegistry shopkeepersAPI = ShopkeepersAPI.getShopkeeperRegistry();
     public static HashMap<UUID, String> shopTitles = new HashMap<>();
     public static HashMap<String, ItemStack> heads = new HashMap<>();
+    static File onlineCacheFile = new File(plugin.getDataFolder(), "OnlineCache.yml");
+    static File offlineCacheFile = new File(plugin.getDataFolder(), "OfflineCache.yml");
     static FileConfiguration onlineCache = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "OnlineCache.yml"));
     static FileConfiguration offlineCache = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "OfflineCache.yml"));
     public static void loadShops() {
@@ -76,7 +83,7 @@ public class Utils {
 
 
     public static void debugLog(String s) {
-        if (plugin.setting().getBoolean("debug")) {
+        if (setting().getBoolean("debug")) {
             Bukkit.getLogger().warning("ShopkeepersAddon Debug » " + s);
         }
     }
@@ -89,7 +96,7 @@ public class Utils {
     }
 
     public static String configData(String key) {
-        return plugin.setting().getString(key);
+        return getSettingString(key);
     }
 
     public static ItemMeta setData(ItemMeta itemMeta, String key, String value) {
@@ -120,25 +127,24 @@ public class Utils {
     public static ItemStack getCustomHead(String name, String texture) {
         ItemStack head = new ItemStack(Material.PLAYER_HEAD, 1);
         SkullMeta headMeta = (SkullMeta) head.getItemMeta();
-
-        if (headMeta != null) {
-            try {
-                if (isPaperAvailable()) {
-                    PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID(), name);
-                    headMeta.setPlayerProfile(profile);
-                } else {
-                    GameProfile profile = new GameProfile(UUID.fromString("8667ba71-b85a-4004-af54-457a9734eed7"), name);
-                    profile.getProperties().put("textures", new Property("textures", texture));
-                    Field profileField = headMeta.getClass().getDeclaredField("profile");
-                    profileField.setAccessible(true);
-                    profileField.set(headMeta, profile);
-                }
-                head.setItemMeta(headMeta);
-            } catch (Exception e) {
-                debugLog("Error getting head for " + name);
-                return null;
+        try {
+            if (isPaperAvailable()) {
+                PlayerProfile profile = Bukkit.createProfile(name);
+                profile.getProperties().add(new ProfileProperty("textures", texture));
+                headMeta.setPlayerProfile(profile);
+            } else {
+                GameProfile profile = new GameProfile(UUID.fromString("8667ba71-b85a-4004-af54-457a9734eed7"), name);
+                profile.getProperties().put("textures", new Property("textures", texture));
+                Field profileField = headMeta.getClass().getDeclaredField("profile");
+                profileField.setAccessible(true);
+                profileField.set(headMeta, profile);
             }
+            head.setItemMeta(headMeta);
+        } catch (Exception e) {
+            debugLog("Error getting head for " + name);
+            return null;
         }
+
         return head;
     }
 
@@ -148,6 +154,7 @@ public class Utils {
 
         for (int i = 0; i < retries; i++) {
             try {
+                debugLog("Creating profile for " + name + " with UUID " + uuid);
                 PlayerProfile profile = Bukkit.createProfile(uuid, name);
                 return profile;
             } catch (MinecraftClientHttpException e) {
@@ -170,12 +177,20 @@ public class Utils {
 
         ItemStack head = new ItemStack(Material.PLAYER_HEAD, 1);
         SkullMeta headMeta = (SkullMeta) head.getItemMeta();
+        debugLog("Getting head" + playerUUID + " " + headMeta);
 
         if (headMeta != null) {
             try {
                 if (isPaperAvailable()) {
-                    PlayerProfile profile = createProfileWithRetry(playerUUID, sanitizedName(playerName));
-                    headMeta.setPlayerProfile(profile);
+
+                    if(onlineCache.contains(playerName)) {
+                        debugLog("Getting online cache head for " + playerName);
+                        PlayerProfile profile = createProfileWithRetry(UUID.fromString((String) onlineCache.get(playerName)), sanitizedName(playerName));
+                        headMeta.setPlayerProfile(profile);
+                    } else {
+                        PlayerProfile profile = Bukkit.createProfile(UUID.fromString("8667ba71-b85a-4004-af54-457a9734eed7"),playerName);
+                        headMeta.setPlayerProfile(profile);
+                    }
                 } else {
                     GameProfile profile = new GameProfile(playerUUID, sanitizedName(playerName));
                     Field profileField = headMeta.getClass().getDeclaredField("profile");
@@ -236,9 +251,7 @@ public class Utils {
     }
 
     public static UUID getUUIDFromName(String playerName, boolean online) {
-
         if (online) {
-
             if (onlineCache.contains(playerName)) {
                 return UUID.fromString(onlineCache.getString(playerName));
             } else if (offlineCache.contains(playerName)) {
@@ -248,7 +261,6 @@ public class Utils {
             try {
                 String urlString = "https://api.mojang.com/users/profiles/minecraft/" + playerName;
                 HttpURLConnection connection = (HttpURLConnection) new URL(urlString).openConnection();
-
                 connection.setRequestMethod("GET");
                 connection.setRequestProperty("Accept", "application/json");
 
@@ -263,8 +275,15 @@ public class Utils {
 
                     if (jsonResponse.has("id")) {
                         String uuidString = jsonResponse.get("id").getAsString();
-                        onlineCache.set(playerName, convertToJavaUUID(uuidString));
-                        return convertToJavaUUID(uuidString);
+                        UUID uuid = convertToJavaUUID(uuidString);
+                        onlineCache.set(playerName, uuid.toString());
+                        try {
+                            onlineCache.save(onlineCacheFile); // Save after setting the value
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        debugLog("UUID for " + playerName + " is " + uuid);
+                        return uuid;
                     } else {
                         return getUUIDFromName(playerName, false);
                     }
@@ -274,6 +293,7 @@ public class Utils {
             }
         } else {
             if (offlineCache.contains(playerName)) {
+                debugLog("Getting offline cache UUID for " + playerName + " " + offlineCache.getString(playerName));
                 return UUID.fromString(offlineCache.getString(playerName));
             }
 
@@ -281,6 +301,12 @@ public class Utils {
             if (player != null) {
                 String uuidString = player.getUniqueId().toString();
                 offlineCache.set(playerName, uuidString);
+                try {
+                    offlineCache.save(offlineCacheFile); // Save after setting the value
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 return player.getUniqueId();
             }
         }
@@ -298,27 +324,34 @@ public class Utils {
     }
 
     static ItemStack getIcon(String uniqueID, String key, String type) {
-        ItemStack headItem = null;
-        ItemMeta headMeta;
-        switch (key) {
-            case "adminshop":
-                AdminShopkeeper shopkeeper = (AdminShopkeeper) shopkeepersAPI.getShopkeeperByUniqueId(UUID.fromString(uniqueID));
-                headItem = getHead(getUUIDFromName(sanitizedName(type), true) , shopkeeper.getName().isEmpty() ? "Admin" : sanitizedName(shopkeeper.getName()));
-                headMeta = headItem.getItemMeta();
-                headMeta.setDisplayName(shopkeeper.getName().isEmpty() ? "Admin Shop" : shopkeeper.getName());
-                headMeta = setData(headMeta, "shopkeeperID", uniqueID);
-                headItem.setItemMeta(headMeta);
-                return headItem;
-            case "playershop":
-                PlayerShopkeeper playerShopkeeper = (PlayerShopkeeper) shopkeepersAPI.getShopkeeperByUniqueId(UUID.fromString(uniqueID));
-                headItem = getHead(getUUIDFromName(playerShopkeeper.getOwnerName(), true) , playerShopkeeper.getOwnerName());
-                headMeta = headItem.getItemMeta();
-                headMeta.setDisplayName(playerShopkeeper.getOwnerName() + "'s Shop");
-                headMeta = setData(headMeta, "ownerID", getUUIDFromName(playerShopkeeper.getOwnerName(), false).toString());
-                headItem.setItemMeta(headMeta);
-                return headItem;
+        try {
+            ItemStack headItem = null;
+            ItemMeta headMeta;
+            switch (key) {
+                case "adminshop":
+                    AdminShopkeeper shopkeeper = (AdminShopkeeper) shopkeepersAPI.getShopkeeperByUniqueId(UUID.fromString(uniqueID));
+                    debugLog("Admin Shopkeeper: " + type);
+                    headItem = getHead(getUUIDFromName(sanitizedName(type), true) , type);
+                    headMeta = headItem.getItemMeta();
+                    headMeta.setDisplayName(shopkeeper.getName().isEmpty() ? "Admin Shop" : shopkeeper.getName());
+                    headMeta = setData(headMeta, "shopkeeperID", uniqueID);
+                    headItem.setItemMeta(headMeta);
+                    return headItem;
+                case "playershop":
+                    PlayerShopkeeper playerShopkeeper = (PlayerShopkeeper) shopkeepersAPI.getShopkeeperByUniqueId(UUID.fromString(uniqueID));
+                    headItem = getHead(getUUIDFromName(playerShopkeeper.getOwnerName(), true) , playerShopkeeper.getOwnerName());
+                    headMeta = headItem.getItemMeta();
+                    headMeta.setDisplayName(playerShopkeeper.getOwnerName() + "'s Shop");
+                    headMeta = setData(headMeta, "ownerID", getUUIDFromName(playerShopkeeper.getOwnerName(), false).toString());
+                    headItem.setItemMeta(headMeta);
+                    return headItem;
+            }
+            return headItem;
         }
-        return headItem;
+        catch (Exception e) {
+            debugLog("Error getting icon for " + uniqueID);
+            return null;
+        }
     }
 
     public static void teleportToShop(Player player, String shopkeeperID, boolean isAdminShop) {
@@ -330,12 +363,9 @@ public class Utils {
                 ? plugin.getConfig().getBoolean("admin-shop.teleport.allow-movement")
                 : plugin.getConfig().getBoolean("player-shop.teleport.allow-movement");
 
-        String titleMessage = isAdminShop
-                ? setting().getString("messages.admin-teleport-title")
-                : setting().getString("messages.player-teleport-title");
-        String cancelMessage = setting().getString("messages.teleport-cancelled");
-        String successMessage = setting().getString("messages.teleport-success");
-        String errorMessage = setting().getString("messages.no-shop");
+        String cancelMessage = getSettingString("messages.teleport-cancelled");
+        String successMessage = getSettingString("messages.teleport-success");
+        String errorMessage = getSettingString("messages.no-shop");
 
         // Bypass warmup permission check
         if (isAdminShop && player.hasPermission("shopkeeperaddon.adminshop.warmup.bypass")) {
@@ -347,11 +377,10 @@ public class Utils {
         // Retrieve shop location
         Location shopLocation;
         if (isAdminShop) {
-            // Find the shopkeeper by their unique ID for admin shop
+            debugLog("AdminShop ID: " + shopkeeperID);
             Shopkeeper shopkeeper = shopkeepersAPI.getShopkeeperByUniqueId(UUID.fromString(shopkeeperID));
             shopLocation = shopkeeper.getLocation();
         } else {
-            // Retrieve shop data from the database for player shop
             shopLocation = getPlayerShopLocation(shopkeeperID);
             debugLog("ID: " + shopkeeperID);
         }
@@ -414,13 +443,22 @@ public class Utils {
     }
 
 
-    public static String getShopTitle(String playerName){
+    public static List<String> getShopTitle(String playerName) {
         UUID playerUUID = UUID.fromString(getUUIDFromName(playerName, false).toString());
-        if (shopTitles.containsKey(playerUUID)){
-            return shopTitles.get(playerUUID);
+
+        if (shopTitles.containsKey(playerUUID)) {
+            return Arrays.stream(shopTitles.get(playerUUID).split("\\\\n"))
+                    .map(line -> ChatColor.translateAlternateColorCodes('&', line))
+                    .map(line -> line.length() > 1 ? line.substring(1, line.length() - 1) : "") // Remove first and last character
+                    .collect(Collectors.toList());
         }
-        return setting().getString("messages.no-shop");
+
+        // Return the no-shop-lore from config, with color formatting
+        return setting().getStringList("messages.no-shop-lore").stream()
+                .map(line -> ChatColor.translateAlternateColorCodes('&', line))
+                .collect(Collectors.toList());
     }
+
 
 
 
@@ -494,7 +532,7 @@ public class Utils {
                     debugLog("Yaw and Pitch: " + player.getLocation().getYaw() + " " + player.getLocation().getPitch());
 
                     pstmt.executeUpdate();
-                    sendPlayerMessage(player,setting().getString("messages.shop-set"));
+                    sendPlayerMessage(player,getSettingString("messages.shop-set"));
                 }
             }
 

@@ -24,21 +24,29 @@ public class EcoUtils {
     }
 
 
-    static ItemStack getCurrencyItem(double price){
-        ItemStack moneyItem = new ItemStack(Material.valueOf(plugin.setting().getString("economy.item.material")));
+    static ItemStack getCurrencyItem(double price, boolean isBuyItem) {
+        String type = isBuyItem ? "buy-item" : "sell-item";
+        Material material = Material.valueOf(plugin.getSettingString("economy." + type + ".material"));
+        ItemStack moneyItem = new ItemStack(material);
         ItemMeta meta = moneyItem.getItemMeta();
-        meta.setDisplayName(plugin.setting().getString("economy.item.name").replace("%price%", String.valueOf(price)));
-        List<String> lore = plugin.setting().getStringList("economy.item.lore");
-        meta.setLore(lore);
-        meta = setPrice(meta, "itemprice", price);
-        if (plugin.setting().getBoolean("economy.item.glow")){
-            meta.addEnchant(Enchantment.LURE, 1, true);
-            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        }
-        moneyItem.setItemMeta(meta);
-        return moneyItem;
 
+        if (meta != null) {
+            meta.setDisplayName(plugin.getSettingString("economy." + type + ".name").replace("%price%", String.valueOf(price)));
+            List<String> lore = plugin.setting().getStringList("economy." + type + ".lore");
+            meta.setLore(lore);
+            meta = setPrice(meta, "itemprice", price);
+
+            if (plugin.setting().getBoolean("economy." + type + ".glow")) {
+                meta.addEnchant(Enchantment.LURE, 1, true);
+                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            }
+
+            moneyItem.setItemMeta(meta);
+        }
+
+        return moneyItem;
     }
+
 
     public static void removeEconomyItem(Player player){
         for (ItemStack item : player.getInventory().getContents()){

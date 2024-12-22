@@ -71,7 +71,7 @@ public class ShopEditTask implements Listener, PriceInputCallback {
             page = event.getClickedInventory().getItem(31).getAmount();
             SetPriceTask setPriceTask = new SetPriceTask(player, event.getSlot(), this);
             setPriceTask.startEdit();
-            sendPlayerMessage(player,setting().getString("messages.set-price"));
+            sendPlayerMessage(player,getSettingString("messages.set-price"));
             player.closeInventory();
             return;
         }
@@ -118,7 +118,7 @@ public class ShopEditTask implements Listener, PriceInputCallback {
     }
 
     private void setDefaultPriceItem(Inventory inventory, int slot) {
-        ItemStack item = getCurrencyItem(1.0);
+        ItemStack item = getCurrencyItem(1.0, slot < 9);
         inventory.setItem(slot, item);
     }
     
@@ -136,13 +136,13 @@ public class ShopEditTask implements Listener, PriceInputCallback {
     }
 
     @Override
-    public void onPriceSet(double price, int slot, int rawSlot) {
-        sendPlayerMessage(player,setting().getString("messages.price-changed").replace("%price%", String.valueOf(price)));
+    public void onPriceSet(double price, int rawSlot) {
+        sendPlayerMessage(player,getSettingString("messages.price-changed").replace("%price%", String.valueOf(price)));
         shopkeeper.openEditorWindow(player);
         while (player.getOpenInventory().getTopInventory().getItem(31).getAmount() != page) {
             simulateClick(player, player.getOpenInventory().getTopInventory(), 35);
         }
-        ItemStack priceItem = getCurrencyItem(price);
+        ItemStack priceItem = getCurrencyItem(price, rawSlot < 9);
         player.getOpenInventory().getTopInventory().setItem(rawSlot, priceItem);
     }
 

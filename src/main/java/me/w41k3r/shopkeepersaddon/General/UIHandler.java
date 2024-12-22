@@ -114,10 +114,7 @@ public class UIHandler {
                 head = getIcon(shopkeeper.getString("uniqueId"), "playershop", "player");
                 ItemMeta playerHeadMeta = head.getItemMeta();
                 List<String> lore = new ArrayList<>();
-                lore.add(getShopTitle(shopkeeper.getString("owner")));
-                for (ItemStack item : items) {
-                    lore.add(item.getType().toString());
-                }
+                lore.addAll(getShopTitle(shopkeeper.getString("owner")));
                 playerHeadMeta.setLore(lore);
                 head.setItemMeta(playerHeadMeta);
                 if (playerHeads.contains(head)) {

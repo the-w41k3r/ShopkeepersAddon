@@ -13,8 +13,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import static me.w41k3r.shopkeepersaddon.Main.sendPlayerMessage;
-import static me.w41k3r.shopkeepersaddon.Main.setting;
+import static me.w41k3r.shopkeepersaddon.Main.*;
 
 public class TeleportWarmupTask implements Listener {
     private final Player player;
@@ -62,7 +61,7 @@ public class TeleportWarmupTask implements Listener {
                 }
 
                 // Update title and chat message with countdown
-                player.sendTitle(setting().getString("messages.teleport-title"), setting().get("messages.teleport-subtitle").toString().replace("%time%", String.valueOf(countdown)), 0, 20, 0);
+                player.sendTitle(getSettingString("messages.teleport-title"), getSettingString("messages.teleport-subtitle").replace("%time%", String.valueOf(countdown)), 0, 20, 0);
                 countdown--; // Decrement countdown
             }
         }.runTaskTimer(plugin, 0, 20); // Repeat every 20 ticks (1 second)
