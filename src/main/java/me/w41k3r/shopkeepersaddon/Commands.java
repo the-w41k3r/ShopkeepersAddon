@@ -1,75 +1,60 @@
-package me.w41k3r.shopkeepersaddon;
+package me.w41k3r.shopkeepersAddon;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Arrays;
-
-import static me.w41k3r.shopkeepersaddon.General.UIHandler.HomePage;
-import static me.w41k3r.shopkeepersaddon.General.Utils.*;
-import static me.w41k3r.shopkeepersaddon.Main.*;
+import static me.w41k3r.shopkeepersAddon.gui.listeners.UpdateListeners.updateShops;
+import static me.w41k3r.shopkeepersAddon.gui.managers.PlayerShopsManager.saveShop;
+import static me.w41k3r.shopkeepersAddon.gui.models.Variables.homePage;
+import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.plugin;
 
 public class Commands implements CommandExecutor {
+
+    /*
+     * This class defines all the commands for the ShopkeepersAddon plugin addon.
+     * * The commands are registered in the plugin.yml file.
+     * */
+
+    public static void initCommands() {
+        plugin.getCommand("shops").setExecutor(new Commands());
+        plugin.getCommand("setshop").setExecutor(new Commands());
+    }
+
+
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String label, String[] strings) {
-
-
-
-
-        if (!(commandSender instanceof Player)){
+    public boolean onCommand(CommandSender commandSender, Command command, String alias, String[] args) {
+        if (!(commandSender instanceof Player)) {
             commandSender.sendMessage("You must be a player to use this command!");
             return false;
         }
-
-        Player player = (Player) commandSender;
-
-
-
-        if (label.equalsIgnoreCase("setshop")) {
-            if (strings.length < 1) {
-                return false;
-            }
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    setShop(commandSender.getName(), Arrays.toString(strings), (Player) commandSender);
+        switch (command.getName().toLowerCase()){
+            case "shops":
+                Player p = (Player) commandSender;
+                p.openInventory(homePage);
+                return true;
+            case "setshop":
+                if (args.length < 1) {
+                    return false;
                 }
-            }.runTaskAsynchronously(Main.plugin);
-            return true;
-        }
+                new Thread(() -> {
+                        // Convert args to a single string
+                        StringBuilder argsBuilder = new StringBuilder();
+                        for (String arg : args) {
+                            argsBuilder.append(arg).append(" ");
+                        }
+                        String shopName = argsBuilder.toString().trim();
+                        java.util.List<String> shopNameList = java.util.Arrays.asList(shopName.split("\\\\n"));
+                        saveShop(shopNameList, (Player) commandSender);
+                    }).start();
 
-        if (label.equalsIgnoreCase("visitshop")) {
-            if (strings.length < 1) {
+                return true;
+
+            default:
                 return false;
-            }
-            teleportToShop((Player) commandSender, getUUIDFromName(strings[0], false).toString().trim(), false);
-            return true;
         }
 
-        if (label.equalsIgnoreCase("shops")){
-            try {
-                ((Player) commandSender).openInventory(HomePage);
-            } catch (Exception e) {
-                sendPlayerMessage(player,getSettingString("messages.no-shop"));
-            }
-            return true;
-        }
-
-        if (strings[0].equalsIgnoreCase("version")) {
-            sendPlayerMessage(player,"§eShopkeepersAddon: §7" + Main.plugin.getDescription().getVersion());
-            return true;
-        }
-
-        if (strings[0].equalsIgnoreCase("reload")) {
-            Main.plugin.reloadConfig();
-            sendPlayerMessage(player,"§6Shops reloaded!");
-            return true;
-        }
-
-        return false;
     }
 
 }

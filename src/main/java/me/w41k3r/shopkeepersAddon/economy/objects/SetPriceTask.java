@@ -1,4 +1,4 @@
-package me.w41k3r.shopkeepersaddon.Economy;
+package me.w41k3r.shopkeepersAddon.economy.objects;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -7,7 +7,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
-import static me.w41k3r.shopkeepersaddon.Main.*;
+import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.*;
 
 public class SetPriceTask implements Listener {
     private final Player player;
@@ -32,7 +32,7 @@ public class SetPriceTask implements Listener {
 
         try {
             if (event.getMessage().equalsIgnoreCase("cancel")) {
-                sendPlayerMessage(player, getSettingString("messages.price-change-cancelled"));
+                sendPlayerMessage(player, config.getString("messages.priceChangeCancelled"));
                 event.setCancelled(true);
                 HandlerList.unregisterAll(this);
                 return;
@@ -50,7 +50,7 @@ public class SetPriceTask implements Listener {
 
         } catch (NumberFormatException e) {
             event.setCancelled(true);
-            sendPlayerMessage(player, getSettingString("messages.invalid-price"));
+            sendPlayerMessage(player, config.getString("messages.invalidPrice"));
         }
 
     }

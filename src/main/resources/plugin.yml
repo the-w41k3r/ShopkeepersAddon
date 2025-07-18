@@ -1,48 +1,36 @@
 name: ShopkeepersAddon
 version: '${project.version}'
-main: me.w41k3r.shopkeepersaddon.Main
-api-version: 1.16
-depend: [Shopkeepers]
+main: me.w41k3r.shopkeepersAddon.ShopkeepersAddon
+api-version: '1.21'
+prefix: Shopkeepers Addon
+authors: [ _w41k3r ]
+description: Add economy and navigation to Shopkeepers plugin.
+depend: [Shopkeepers, ProtocolLib]
 softdepend: [Essentials, CMI, Vault]
-commands:
-  shopkeepersaddon:
-    description: ShopkeepersAddon command
-    usage: /shopkeepersaddon [args]
-    permission: shopkeepersaddon.command
-    default: op
-    aliases:
-      - ska
 
+commands:
   shops:
     description: ShopkeepersAddon shops command
     usage: /shops
-    permission: shopkeepersaddon.shops.command
-
-  visitShop:
-    description: ShopkeepersAddon visitShop command
-    usage: /visitShop [player]
-    permission: shopkeepersaddon.visitShop.command
+    permission: skp.command.shops
     aliases:
-      - vshop
-
+      - s
   setshop:
     description: Set a shop entry point or teleport location.
-    usage: /setshop [description]
-    permission: shopkeepersaddon.setshop.command
+    usage: /setshop [description] - (Use \n for new lines)
+    permission: skp.command.setshop
+
 
 permissions:
-    shopkeepersaddon.command:
-        description: ShopkeepersAddon command permission
-        default: true
-    shopkeepersaddon.shops.command:
-        description: ShopkeepersAddon shops command permission
-        default: true
-    shopkeepersaddon.visitShop.command:
-        description: ShopkeepersAddon visitShop command permission
-        default: true
-    shopkeeperaddon.adminshop.warmup.bypass:
-        description: Bypass the warmup for teleporting to admin shops
-        default: false
-    shopkeeperaddon.playershop.warmup.bypass:
-        description: Bypass the warmup for teleporting to player shops
-        default: false
+  skp.command.shops:
+    description: Allows access to the shops command
+    default: true
+  skp.adminshop.warmup.bypass:
+    description: Bypass the warmup for teleporting to admin shops
+    default: op
+  skp.playershop.warmup.bypass:
+    description: Bypass the warmup for teleporting to player shops
+    default: op
+  skp.command.setshop:
+    description: Allows access to the setshop command
+    default: true

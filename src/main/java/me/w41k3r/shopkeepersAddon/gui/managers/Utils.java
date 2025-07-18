@@ -1,23 +1,27 @@
-package me.w41k3r.shopkeepersaddon.Economy;
+package me.w41k3r.shopkeepersAddon.gui.managers;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.TradeSelectEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.persistence.PersistentDataType;
 
-import java.util.Objects;
+import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.plugin;
+import static me.w41k3r.shopkeepersAddon.economy.EconomyManager.hasMoney;
+import static me.w41k3r.shopkeepersAddon.economy.PersistantDataManager.getPrice;
+import static me.w41k3r.shopkeepersAddon.economy.PersistantDataManager.isEconomyItem;
 
-import static me.w41k3r.shopkeepersaddon.Economy.EcoUtils.hasMoney;
-import static me.w41k3r.shopkeepersaddon.Economy.EcoUtils.removeEconomyItem;
-import static me.w41k3r.shopkeepersaddon.General.Utils.getPrice;
-import static me.w41k3r.shopkeepersaddon.General.Utils.hasData;
-import static me.w41k3r.shopkeepersaddon.Main.*;
+public class Utils {
 
-public class EcoUIHandler {
+    public static void removeEconomyItem(Player player){
+        for (ItemStack item : player.getInventory().getContents()){
+            if (item != null && isEconomyItem(item)){
+                player.getInventory().remove(item);
+                return;
+            }
+        }
+    }
 
-    static void setItemsOnTradeSlots(TradeSelectEvent event, int slot){
+    public static void setItemsOnTradeSlots(TradeSelectEvent event, int slot){
         ItemStack toAdd = slot == 0 ? event.getMerchant().getRecipe(event.getIndex()).getIngredients().getFirst() : event.getMerchant().getRecipe(event.getIndex()).getResult();
         if(event.getInventory().getItem(slot) != null){
             event.getWhoClicked().getInventory().addItem(event.getInventory().getItem(slot));
@@ -33,7 +37,6 @@ public class EcoUIHandler {
 
         event.getInventory().setItem(slot, toAdd);
         Bukkit.getScheduler().runTaskLater(plugin, () -> removeEconomyItem((Player) event.getWhoClicked()), 1);
+
     }
-
-
 }

@@ -1,4 +1,4 @@
-package me.w41k3r.shopkeepersaddon.General;
+package me.w41k3r.shopkeepersAddon.gui.teleporter;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -13,9 +13,20 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import static me.w41k3r.shopkeepersaddon.Main.*;
+import java.util.UUID;
 
-public class TeleportWarmupTask implements Listener {
+import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.*;
+
+public class TeleportWarmup implements Listener {
+    // This class is intended to handle teleportation warmup functionalities.
+    // Currently, it does not contain any methods or fields.
+    // Future implementations may include:
+    // - Managing teleportation warmup timers
+    // - Handling player confirmations for teleportation
+    // - Integrating with the Teleporter class for actual teleportation
+
+    // Note: This class is currently empty and serves as a placeholder for future development.
+
     private final Player player;
     private final Location initialLocation;
     private final Location teleportLocation;
@@ -25,27 +36,32 @@ public class TeleportWarmupTask implements Listener {
     private final int warmupTime; // in seconds
     private final Plugin plugin;
     private final boolean isAdminShop; // Flag to distinguish admin and player shops
-
-    private BukkitTask warmupTask;
     private int countdown; // Track remaining time
+    private final UUID shopkeeperUUID; // Unique identifier for the shopkeeper
+    private BukkitTask warmupTask;
+    private final String errorMessage;
 
-    public TeleportWarmupTask(Player player, Location teleportLocation, int warmupTime, boolean allowMovement, String cancelMessage, String successMessage, Plugin plugin, boolean isAdminShop) {
+    public TeleportWarmup(Player player, Location initialLocation, Location teleportLocation, String cancelMessage,                          String successMessage, String errorMessage,boolean allowMovement,
+                          int warmupTime,
+                          Plugin plugin, boolean isAdminShop, UUID shopkeeperUUID) {
         this.player = player;
-        this.initialLocation = player.getLocation(); // Store initial location
+        this.initialLocation = initialLocation;
         this.teleportLocation = teleportLocation;
         this.cancelMessage = cancelMessage;
-        this.warmupTime = warmupTime;
         this.allowMovement = allowMovement;
         this.successMessage = successMessage;
+        this.errorMessage = errorMessage;
+        this.warmupTime = warmupTime;
         this.plugin = plugin;
+        this.isAdminShop = isAdminShop;
         this.countdown = warmupTime; // Set countdown to warmup time
-        this.isAdminShop = isAdminShop; // Set the flag for admin shop
+        this.shopkeeperUUID = shopkeeperUUID;
     }
 
-    // Start the warmup process with countdown and movement check
+
     public void startWarmup() {
         // Register PlayerMoveEvent listener if movement isn't allowed
-        if (!allowMovement) {
+        if (!allowMovement && warmupTime > 0) {
             Bukkit.getPluginManager().registerEvents(this, plugin);
         }
 
@@ -54,30 +70,29 @@ public class TeleportWarmupTask implements Listener {
             @Override
             public void run() {
                 if (countdown <= 0) {
-                    // Teleport player when countdown reaches zero
                     teleportPlayer();
-                    cancel(); // Cancel the task
+                    cancel();
                     return;
                 }
 
                 // Update title and chat message with countdown
-                player.sendTitle(getSettingString("messages.teleport-title"), getSettingString("messages.teleport-subtitle").replace("%time%", String.valueOf(countdown)), 0, 20, 0);
+                player.sendTitle(config.getString("messages.adminShops.teleport.title"),
+                        config.getString("messages.adminShops.teleport.subtitle").replace("%time%", String.valueOf(countdown)), 0, 20,
+                        0);
                 countdown--; // Decrement countdown
             }
         }.runTaskTimer(plugin, 0, 20); // Repeat every 20 ticks (1 second)
     }
 
-    // Teleport the player
-    // Teleport the player
     private void teleportPlayer() {
         PlayerMoveEvent.getHandlerList().unregister(this);
-
         Location finalLocation;
+        debugLog("Starting teleportation for player: " + player.getName());
         if (isAdminShop) {
-            finalLocation = getSafeLocationNearby(teleportLocation);
-            player.teleport(finalLocation);
-            setPlayerFacingBlock(player, teleportLocation);
+            debugLog("Teleporting player to admin shop: " + shopkeeperUUID);
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "shopkeeper teleport " + shopkeeperUUID + " " + player.getName());
         } else {
+            debugLog("Teleporting player to player shop");
             finalLocation = teleportLocation;
             player.teleport(finalLocation);
         }

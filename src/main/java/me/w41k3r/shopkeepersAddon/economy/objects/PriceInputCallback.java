@@ -1,4 +1,4 @@
-package me.w41k3r.shopkeepersaddon.Economy;
+package me.w41k3r.shopkeepersAddon.economy.objects;
 
 public interface PriceInputCallback {
 
