@@ -138,7 +138,7 @@
         <dependency>
             <groupId>com.github.Shopkeepers</groupId>
             <artifactId>Shopkeepers</artifactId>
-            <version>v2.23.9</version>
+            <version>v2.23.8</version>
             <scope>provided</scope>
         </dependency>
 
