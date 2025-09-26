@@ -16,6 +16,7 @@ import static me.w41k3r.shopkeepersAddon.Events.initEvents;
 import static me.w41k3r.shopkeepersAddon.gui.BaseGUIHandlers.getFillerItem;
 import static me.w41k3r.shopkeepersAddon.gui.init.InitAdminPages.initPages;
 import static me.w41k3r.shopkeepersAddon.gui.managers.FetchShopkeepersManager.fetchShopkeepers;
+import static me.w41k3r.shopkeepersAddon.gui.models.Variables.blacklistedItems;
 import static me.w41k3r.shopkeepersAddon.gui.models.Variables.lastUpdateTime;
 
 
@@ -68,6 +69,7 @@ public final class ShopkeepersAddon extends JavaPlugin {
         initPages();
         adminFillerItem  = getFillerItem("adminShop.filler");
         playerFillerItem = getFillerItem("playerShop.filler");
+        blacklistedItems = plugin.getConfig().getStringList("playerShops.itemBlacklist");
         prefix = ChatColor.translateAlternateColorCodes('&',
                 config.getString("messages.prefix", "&7[&bShopkeepersAddon&7] "))
                 .replace("\\n", "\n");
@@ -76,8 +78,6 @@ public final class ShopkeepersAddon extends JavaPlugin {
 
     @Override
     public void onDisable() {
-//        PacketEvents.getAPI().terminate();
-
     }
 
 

@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.plugin;
@@ -36,4 +37,6 @@ public class Variables {
     public static String SKIN_CACHE_DIR = plugin.getDataFolder().toPath().resolve("skins").toString();
 
     public static long lastUpdateTime = 0;
+
+    public static List<String> blacklistedItems = new ArrayList<>();
 }

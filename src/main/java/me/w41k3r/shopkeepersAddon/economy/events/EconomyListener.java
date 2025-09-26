@@ -1,8 +1,6 @@
 package me.w41k3r.shopkeepersAddon.economy.events;
 
 import com.nisovin.shopkeepers.api.ShopkeepersAPI;
-import com.nisovin.shopkeepers.api.events.PlayerOpenUIEvent;
-import com.nisovin.shopkeepers.api.events.ShopkeeperEvent;
 import com.nisovin.shopkeepers.api.events.ShopkeeperOpenUIEvent;
 import com.nisovin.shopkeepers.api.events.ShopkeeperTradeEvent;
 import com.nisovin.shopkeepers.api.shopkeeper.Shopkeeper;
@@ -12,11 +10,8 @@ import com.nisovin.shopkeepers.api.shopkeeper.player.PlayerShopkeeper;
 import me.w41k3r.shopkeepersAddon.economy.objects.ShopEditTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,10 +20,8 @@ import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.scheduler.BukkitScheduler;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
-import java.util.logging.Level;
 
 import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.*;
 import static me.w41k3r.shopkeepersAddon.economy.EconomyManager.hasMoney;
@@ -36,7 +29,6 @@ import static me.w41k3r.shopkeepersAddon.economy.PersistantDataManager.getPrice;
 import static me.w41k3r.shopkeepersAddon.economy.PersistantDataManager.isEconomyItem;
 import static me.w41k3r.shopkeepersAddon.gui.managers.Utils.removeEconomyItem;
 import static me.w41k3r.shopkeepersAddon.gui.managers.Utils.setItemsOnTradeSlots;
-import static me.w41k3r.shopkeepersAddon.gui.models.Variables.registry;
 
 public class EconomyListener implements Listener {
 
@@ -55,12 +47,6 @@ public class EconomyListener implements Listener {
     }
 
 
-    @EventHandler
-    public void PlayerOpenUI(PlayerOpenUIEvent event){
-        if (event.getUIType().equals(ShopkeepersAPI.getDefaultUITypes().getTradingUIType())) {
-
-        }
-    }
 
 
     @EventHandler
@@ -125,24 +111,25 @@ public class EconomyListener implements Listener {
         if (event.getClickedInventory() == null
                 || event.getCurrentItem() == null
                 || event.getCurrentItem().equals(Material.AIR)
-                || ShopkeepersAPI.getUIRegistry().getUISession(player) == null
-        ) {
+                || ShopkeepersAPI.getUIRegistry().getUISession(player) == null) {
             return;
         }
 
         if (event.getClickedInventory() instanceof MerchantInventory
                 && event.getSlot() == 2
-                && ShopkeepersAPI.getUIRegistry().getUISession(player).getUIType() == ShopkeepersAPI.getDefaultUITypes().getTradingUIType()
-        ) {
+                && ShopkeepersAPI.getUIRegistry().getUISession(player).getUIType() == ShopkeepersAPI.getDefaultUITypes().getTradingUIType()) {
             debugLog("Trading Shopkeeper!");
             MerchantInventory merchantInventory = (MerchantInventory) event.getClickedInventory();
             Shopkeeper shopkeeper = ShopkeepersAPI.getUIRegistry().getUISession(player).getShopkeeper();
             boolean isAdminShopkeeper = shopkeeper instanceof AdminShopkeeper;
             MerchantRecipe recipe = merchantInventory.getSelectedRecipe();
-            if (isEconomyItem(recipe.getResult())) {
-                Double price = getPrice(recipe.getResult());
-                int maxTrades = 1;
+            if (recipe == null || recipe.getIngredients().isEmpty() || recipe.getResult() == null) {
+                return;
+            }
 
+            if (isEconomyItem(recipe.getResult())) {
+                double pricePerTrade = getPrice(recipe.getResult());
+                int maxTrades = 1;
 
                 // Hacky Fix here temporary
                 String shopkeeperId = String.valueOf(shopkeeper.getId());
@@ -150,50 +137,68 @@ public class EconomyListener implements Listener {
                 YamlConfiguration dataConfig = YamlConfiguration.loadConfiguration(dataFile);
                 String ownerUUID = dataConfig.getString(shopkeeperId + ".owner uuid");
 
-                // Check for shift-click
                 if (event.isShiftClick()) {
-                    int affordableTrades = 64;
-                    if (!isAdminShopkeeper){
-                        double ownerMoney = Money.getBalance(ownerUUID);
-                        affordableTrades = (int) Math.floor(ownerMoney / price);
+                    // Calculate max trades based on available items
+                    int maxTradesByItems = Integer.MAX_VALUE;
+                    for (ItemStack ingredient : recipe.getIngredients()) {
+                        if (ingredient == null || ingredient.getType() == Material.AIR) continue;
+                        int required = ingredient.getAmount();
+                        int available = 0;
+                        for (ItemStack invItem : event.getClickedInventory().getContents()) {
+                            if (invItem != null && invItem.isSimilar(ingredient)) {
+                                available += invItem.getAmount();
+                            }
+                        }
+                        maxTradesByItems = Math.min(maxTradesByItems, available / required);
                     }
 
-                    maxTrades = Math.min(affordableTrades, 64);
+                    // Also check owner's balance if not admin
+                    int affordableTrades = maxTradesByItems;
+                    if (!isAdminShopkeeper) {
+                        double ownerMoney = Money.getBalance(ownerUUID);
+                        affordableTrades = (int) Math.floor(ownerMoney / pricePerTrade);
+                    }
+
+                    maxTrades = Math.min(maxTradesByItems, Math.min(affordableTrades, 64));
                 }
 
-                price = price * maxTrades;
+                double totalPrice = pricePerTrade * maxTrades;
 
                 if (!isAdminShopkeeper) {
-
                     double ownerMoney = Money.getBalance(ownerUUID);
-                    if (ownerMoney < price) {
+                    if (ownerMoney < totalPrice) {
                         sendPlayerMessage(player, config.getString("messages.noMoneyOwner"));
                         event.setCancelled(true);
                         return;
                     }
-                    Money.withdrawPlayer(ownerUUID, price);
-                    Money.depositPlayer(player, price);
-                    ItemStack ingredient = recipe.getIngredients().getFirst().clone();
-                    ingredient.setAmount(maxTrades);
-                    event.getClickedInventory().removeItem(ingredient);
+                    Money.withdrawPlayer(ownerUUID, totalPrice);
+                    Money.depositPlayer(player, totalPrice);
+
+                    // Remove ingredients and add to shop container
+                    ItemStack ingredient1 = recipe.getIngredients().getFirst().clone();
+                    ingredient1.setAmount(ingredient1.getAmount() * maxTrades);
+                    event.getClickedInventory().removeItem(ingredient1);
                     PlayerShopkeeper playerShopkeeper = (PlayerShopkeeper) shopkeeper;
                     Inventory container = ((Chest) playerShopkeeper.getContainer().getState()).getBlockInventory();
-                    container.addItem(ingredient);
+                    container.addItem(ingredient1);
+
                     if (recipe.getIngredients().size() > 1) {
-                        ItemStack secondIngredient = recipe.getIngredients().getLast().clone();
-                        secondIngredient.setAmount(maxTrades);
-                        event.getClickedInventory().removeItem(secondIngredient);
-                        container.addItem(secondIngredient);
+                        ItemStack ingredient2 = recipe.getIngredients().getLast().clone();
+                        ingredient2.setAmount(ingredient2.getAmount() * maxTrades);
+                        event.getClickedInventory().removeItem(ingredient2);
+                        container.addItem(ingredient2);
                     }
+
                 } else {
-                    Money.depositPlayer(player, price);
-                    ItemStack ingredient = recipe.getIngredients().getFirst().clone();
-                    ingredient.setAmount(maxTrades);
-                    event.getClickedInventory().removeItem(ingredient);
+                    Money.depositPlayer(player, totalPrice);
+                    ItemStack ingredient1 = recipe.getIngredients().getFirst().clone();
+                    ingredient1.setAmount(ingredient1.getAmount() * maxTrades);
+                    event.getClickedInventory().removeItem(ingredient1);
+
                     if (recipe.getIngredients().size() > 1) {
-                        ItemStack secondIngredient = recipe.getIngredients().getLast().clone();
-                        secondIngredient.setAmount(maxTrades);
-                        event.getClickedInventory().removeItem(secondIngredient);
+                        ItemStack ingredient2 = recipe.getIngredients().getLast().clone();
+                        ingredient2.setAmount(ingredient2.getAmount() * maxTrades);
+                        event.getClickedInventory().removeItem(ingredient2);
                     }
                 }
             }

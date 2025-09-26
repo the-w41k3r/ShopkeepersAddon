@@ -17,10 +17,13 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.logging.Level;
+
 import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.*;
 import static me.w41k3r.shopkeepersAddon.economy.EconomyManager.getCurrencyItem;
 import static me.w41k3r.shopkeepersAddon.economy.PersistantDataManager.isEconomyItem;
 import static me.w41k3r.shopkeepersAddon.gui.managers.Utils.removeEconomyItem;
+import static me.w41k3r.shopkeepersAddon.gui.models.Variables.blacklistedItems;
 
 public class ShopEditTask implements Listener, PriceInputCallback {
 
@@ -34,9 +37,11 @@ public class ShopEditTask implements Listener, PriceInputCallback {
     public ShopEditTask(Player player, Shopkeeper shopkeeper) {
         this.player = player;
         this.shopkeeper = shopkeeper;
+
     }
 
     public void startEdit(){
+        debugLog("Blacklisted items: " + blacklistedItems);
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
@@ -47,6 +52,17 @@ public class ShopEditTask implements Listener, PriceInputCallback {
         ){
             return;
         }
+
+        if(event.getCurrentItem() != null && blacklistedItems.contains(event.getCursor().getType().name()) && shopkeeper instanceof PlayerShopkeeper){
+            sendPlayerMessage(player, config.getString("messages.blacklistedItem", "This item is blacklisted!"));
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                        event.getClickedInventory().setItem(event.getSlot(), new ItemStack( Material.BARRIER));
+                    } , 1
+                    );
+            event.setCancelled(true);
+            return;
+        }
+
 
         if (isEconomyItem(event.getCurrentItem())){
             debugLog(event.getCursor().toString());

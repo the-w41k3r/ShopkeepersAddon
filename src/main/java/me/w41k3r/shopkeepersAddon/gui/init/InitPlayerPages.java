@@ -1,20 +1,16 @@
 package me.w41k3r.shopkeepersAddon.gui.init;
 
 import me.w41k3r.shopkeepersAddon.gui.objects.VirtualInventoryOwner;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Supplier;
-import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static me.w41k3r.shopkeepersAddon.gui.managers.SkinsManager.*;
 import static me.w41k3r.shopkeepersAddon.gui.models.Variables.*;
@@ -25,8 +21,6 @@ import static org.bukkit.Bukkit.createInventory;
 
 public class InitPlayerPages {
 
-
-    private static final Logger log = LoggerFactory.getLogger(InitPlayerPages.class);
 
     /* --------------------------------
          * Initialization of the Player Shops Page

@@ -1,7 +1,6 @@
 #----------------------------------------------
 # DO NOT TOUCH THESE UNLESS YOU KNOW WHAT YOU'RE DOING!
 debug: false
-version: 1.0
 #----------------------------------------------
 
 # You can edit from here:
@@ -13,6 +12,9 @@ playerShops:
     # Warmup in seconds. Set to 0 to disable.
     warmup: 5
     allowMovement: false
+  # Blacklist items that cannot be sold in player shops
+  itemBlacklist:
+    - BEDROCK
 
 adminShops:
   # Allow teleporting to admin shops
@@ -70,6 +72,7 @@ messages:
   invalidPrice: "§cInvalid price! Please enter a valid number."
   priceChanged: "§aPrice changed successfully!"
   priceChangeCancelled: "§cPrice change cancelled!"
+  blacklistedItem: "§cThis item is blacklisted and cannot be sold in player shops."
   previousPage:
     title: "§b§lPrevious Page"
   nextPage:
