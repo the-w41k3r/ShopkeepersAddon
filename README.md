@@ -1,151 +1,123 @@
 
-Credits:
-Major Credits go to blablubbabc for making the amazing Shopkeepers plugin.
 
-Disclaimer:
-This plugin is NOT a full shopkeepers plugin, this ONLY adds additional features to the parent plugin.
-If you are using Shopkeepers then this plugin shall add sorting and easier navigation to the shopkeepers.
+# ShopkeepersAddon - Economy & GUI Navigation Shopkeepers
 
-What does this plugin do?
+![banner](https://cdn.modrinth.com/data/cached_images/790af409b42cc8c9cd15b8d933a1dc2addf9ffd8.png)
+## 🚀 **Transform Your Server's Economy!**
 
-Navigation Addon:
-It will sort them in 3 type:
-1. Player shops - will display all individual player heads and shops they own
-2. Item shop - will display all available trades along with villagers that are selling
-3. Admin shop - all available admin shops
-   On clicking on the desired trade, it will teleport you to the shopkeeper/plot(if using plotsquared)
+> Credits:
+> Major Credits go to blablubbabc for making the amazing Shopkeepers plugin.
 
-Economy Addon:
-It will allow you to do trades with virtual currencies(vault api).
-You will need a Economy plugin for this feature e.g. CMI, EssentialsX. As well as Vault and ProtocolLib.
-Setting up currency based trades are as simple as setting up normal shopkeeper trades.
-In the editor menu on adding a result item a paper will automatically appear on the cost slot. On clicking the paper you will be prompted to enter the price in the chat. Enter the price and you first economy based shopkeeper trade is done.
+> Disclaimer:
+> This plugin is NOT a full shopkeepers plugin, this ONLY adds additional features to the parent plugin.
+> If you are using Shopkeepers then this plugin shall add sorting and easier navigation to the shopkeepers.
 
-Requirements:
-[QUOTE]
-1. Shopkeepers
-2. ProtocolLib
-3. Vault
-4. Any Economy Plugin
-3. PlotSquared latest version. (optional)[/QUOTE][QUOTE]
-   [/QUOTE]
+ShopkeepersAddon supercharges the popular **Shopkeepers** plugin with advanced economy features, beautiful GUI navigation, and powerful player shop management!
 
-How to Install:
+---
 
-1. Click download button, which shall download a jar file. Now put the file inside the plugins folder on your server along with Shopkeepers plugin and PlotSquared(optional).
+## ✨ **Features Overview**
 
-2. Restart the server.
+| Feature | Description | Status |
+|---------|-------------|--------|
+| 💰 **Advanced Economy** | Vault integration with custom price formatting | ✅ |
+| 🎯 **Smart GUI** | Intuitive menus for shop browsing | ✅ |
+| 👥 **Player Shops** | Complete player shop management system | ✅ |
+| ⚡ **Bulk Trading** | Optimized performance for mass trades | ✅ |
+| 🌍 **Multi-Currency** | Custom symbols and international formats | ✅ |
 
-3. To access the shop gui use the command /shops and to allow other players to use the command give them the permission 'SNA.command.shops'.
+---
 
-NOTE: This plugin integrates with plotsquared if its installed in your server to directly teleport the player to the shop's plot instead of teleporting the player to the villager.
-[SPOILER='config.yml']
-[code=YAML]
-#Set this to false if you don't want players to get teleported on clicking the shopkeeper in the gui.
-AllowTeleportToShopkeepers: true
-EconomyHook:
-#Setting this to true allows shopkeepers to trade using virtual-currency(Vault Api)
-#This requires protocolLib and Vault to be installed
-#Requires server restart
-Enabled: true
-#Enabling this will prevent players from setting up item to item based trades.
-BlockItemBasedTrades: false
-#Set the price limit for trades.
-SellingPriceLimit: 100000000000000.00
-#Enable this if bedrock players play in you server(Geyser plugin)
-#Note: you need to have a prefix before the bedrock player's name for this to work(you need to have FloodGate Installed to change bedrock prefix).
-Geyser-Compat:
-Enabled: false
-Name-Prefix: 'B_'
-[/code]
-[/SPOILER]
+## 📚 **Documentation & Guides**
 
-[SPOILER="messages.yml"][code=YAML]
-Supply-Chest-Is-Full: '§cNo space left in the supplies.'
-Owner-Add-Money: '§a+ [amount]'
-Owner-Subtract-Money: '§a- [amount]'
-Shop-Out-Of-Money: '§cThis shop is out of money.'
-Player-Out-Of-Money: '§cYou dont have enough money to buy the item.'
-Shop-Out-Of-Stock: '§cOut of Stock.'
-Invalid-Price-Input: '§cYour trade setup was cancelled due to invalid price input.'
-Price-Limit-Reached: '§cYour trade setup was cancelled due to invalid price input. Highest price limit is [maxPrice]'
-Price-Set-Successfully: '§aItem price successfully set.'
-Price-Input-Request: '§aEnter the price of the item. Type cancel to cancel the setup.'
-Trade-Setup-Cancel: '§cYour trade setup was cancelled.'
-Player-Inventory-Full: '§cYour inventory is full please clear it before purchasing.'
-Currency-Item:
-Name-Format: 'Price [amount]'
-Material: 'PAPER'
-CustomModelData: 0
-Lore:
-- '§bClick to edit'
-[/code]
-[/SPOILER]
+### 🔧 **Setup & Configuration**
+- **[📖 Full Wiki](https://github.com/the-w41k3r/ShopkeepersAddon/wiki)** - Complete documentation
+- **[⚡ Quick Start](https://github.com/the-w41k3r/ShopkeepersAddon/wiki/Installation)** - Get running in 5 minutes
+- **[⚙️ Configuration](https://github.com/the-w41k3r/ShopkeepersAddon/wiki/Configuration)** - Detailed settings guide
 
-[SPOILER='permissions']
-[code]permissions:
-SNA.command.shops:
-description: allows /shops or /sna shops command
-default: op
-SNA.command.shop:
-description: allows /shop or /sna shop command
-default: op
-SNA.command.playershops:
-description: allows /playershops or /sna playershops command
-default: op
-SNA.teleport:
-description: teleport on click
-default: op
-SNA.command.help:
-description: show /sna help message.
-default: op
-SNA.admin:
-description: allows /sna reload command.
-default: op
-[/code]
-[/SPOILER]
+### 🎮 **User Guides**
+- **[⌨️ Commands & Permissions](https://github.com/the-w41k3r/ShopkeepersAddon/wiki/Commands-&-Permissions)** - Complete command reference
+- **[💰 Economy Features](https://github.com/the-w41k3r/ShopkeepersAddon/wiki/Economy-Features)** - Money system guide
+- **[🖥️ GUI Navigation](https://github.com/the-w41k3r/ShopkeepersAddon/wiki/GUI-Navigation)** - Interface tutorial
 
-[SPOILER='commands']
-[code]commands:
-shops:
-description: shop
-usage: '/<command>'
-playershops:
-description: shop gui withoud admin shop icon
-usage: '/<command>'
-shop:
-description: opens admin shops gui with remote access
-usage: '/<command>'
-sna:
-description: parent command
-usage: '/<command> [help, reload, playershops, shop, shops]'
-[/code]
-[/SPOILER]
+### 👥 **Shop Management**
+- **[👤 Player Shops](https://github.com/the-w41k3r/ShopkeepersAddon/wiki/Player-Shops)** - Player shop setup
+- **[⚡ Admin Shops](https://github.com/the-w41k3r/ShopkeepersAddon/wiki/Admin-Shops)** - Admin tools guide
+- **[🔧 Troubleshooting](https://github.com/the-w41k3r/ShopkeepersAddon/wiki/Troubleshooting)** - Fix common issues
 
-[SPOILER='Navigation Screenshots']
+---
 
+## 🎯 **Quick Links**
 
+### 📥 **Download**
+- **[✨ SpigotMC](https://www.spigotmc.org/resources/your-resource-id)** - Primary download
+- **[🌿 Modrinth](https://modrinth.com/plugin/shopkeepersaddon)** - Alternative source
+- **[🐙 GitHub Releases](https://github.com/the-w41k3r/ShopkeepersAddon/releases)** - Latest versions
 
+### 💬 **Community & Support**
+- **[💬 Discord Support](https://discord.gg/bnfhjAtGYU)** - Live help & community
+- **[🐛 Bug Reports](https://github.com/the-w41k3r/ShopkeepersAddon/discussions)** - Report issues
+- **[💡 Feature Requests](https://github.com/the-w41k3r/ShopkeepersAddon/issues)** - Suggest ideas
 
+### 🔧 **Developer Resources**
+- **[🔄 Update Log](https://github.com/the-w41k3r/ShopkeepersAddon/releases)** - Version history
+- **[❤️ Donate](https://paypal.me/thew41k3r)** - Support development
 
+---
 
+## 🚀 **Get Started Now!**
 
+### **Prerequisites**
+- **[Shopkeepers](https://www.spigotmc.org/resources/shopkeepers.80756/)** (v2.23.9+)
+- **[ProtocolLib](https://www.spigotmc.org/resources/protocollib.1997/)** (v5.1.0+)
 
+### **Installation**
+1. **Download** the latest JAR from [Releases](https://github.com/the-w41k3r/ShopkeepersAddon/releases)
+2. **Place** in your `plugins` folder
+3. **Restart** your server
+4. **Configure** via [`config.yml`](https://github.com/the-w41k3r/ShopkeepersAddon/wiki/Configuration)
+5. **Use** `/shops` to open the menu!
 
+---
 
-[/SPOILER]
+## 🏆 **Why Choose ShopkeepersAddon?**
 
-[SPOILER='Economy Screenshots']
+| Aspect | Benefit |
+|--------|---------|
+| **Performance** | Async processing & bulk trade optimization |
+| **Customization** | Complete control over economy formatting |
+| **User Experience** | Beautiful, intuitive GUI interfaces |
+| **Reliability** | Regular updates & active support |
+| **Compatibility** | Works with all Vault economy plugins |
 
+---
 
+## 📊 **Plugin Statistics**
 
+- **✅ 100% Shopkeepers Compatible**
+- **⚡ Handles 1000+ Shops Efficiently**
+- **🌍 Supports International Number Formats**
+- **🔧 Highly Configurable & Modular**
 
+---
 
+## 🤝 **Support the Project**
 
+Love ShopkeepersAddon? Here's how you can help:
 
-[/SPOILER]
+- ⭐ **Star** the [GitHub Repository](https://github.com/the-w41k3r/ShopkeepersAddon)
+- 📝 **Leave a Review** on SpigotMC/Modrinth
+- 🔄 **Share** with other server owners
+- 💖 **Donate** to support development
 
-Get support:
+---
 
+## 📞 **Contact & Links**
 
-Recommended Hosting Provider:
+- **Developer**: _w41k3r
+- **Source Code**: [GitHub Repository](https://github.com/the-w41k3r/ShopkeepersAddon)
+- **Issue Tracker**: [GitHub Issues](https://github.com/the-w41k3r/ShopkeepersAddon/issues)
+- **License**: MIT - Free for commercial use
+
+---
+
