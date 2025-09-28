@@ -2,35 +2,43 @@ name: ShopkeepersAddon
 version: '${project.version}'
 main: me.w41k3r.shopkeepersAddon.ShopkeepersAddon
 api-version: '1.21'
-prefix: Shopkeepers Addon
 authors: [ _w41k3r ]
 description: Add economy and navigation to Shopkeepers plugin.
 depend: [Shopkeepers, ProtocolLib]
 softdepend: [Essentials, CMI, Vault]
 
 commands:
+  shopkeepersaddon:
+    description: Main ShopkeepersAddon command
+    usage: /shopkeepersaddon [reload|version]
+    permission: shopkeepersaddon.command
+    aliases: [skp, shopaddon, sa]
   shops:
-    description: ShopkeepersAddon shops command
+    description: Open the ShopkeepersAddon shops GUI
     usage: /shops
-    permission: skp.command.shops
-    aliases:
-      - s
+    permission: shopkeepersaddon.command.shops
+    aliases: [s]
   setshop:
-    description: Set a shop entry point or teleport location.
-    usage: /setshop [description] - (Use \n for new lines)
-    permission: skp.command.setshop
-
+    description: Set your player shop's name and description
+    usage: /setshop <name>
+    permission: shopkeepersaddon.command.setshop
 
 permissions:
-  skp.command.shops:
+  shopkeepersaddon.command:
+    description: Allows access to the main ShopkeepersAddon command
+    default: true
+  shopkeepersaddon.command.shops:
     description: Allows access to the shops command
     default: true
-  skp.adminshop.warmup.bypass:
-    description: Bypass the warmup for teleporting to admin shops
-    default: op
-  skp.playershop.warmup.bypass:
-    description: Bypass the warmup for teleporting to player shops
-    default: op
-  skp.command.setshop:
+  shopkeepersaddon.command.setshop:
     description: Allows access to the setshop command
     default: true
+  shopkeepersaddon.reload:
+    description: Allows reloading the plugin configuration
+    default: op
+  shopkeepersaddon.admin.warmup.bypass:
+    description: Bypass the warmup for teleporting to admin shops
+    default: op
+  shopkeepersaddon.player.warmup.bypass:
+    description: Bypass the warmup for teleporting to player shops
+    default: op
