@@ -7,6 +7,10 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
+import java.text.NumberFormat;
+import java.text.ParsePosition;
+import java.util.Locale;
+
 import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.*;
 
 public class SetPriceTask implements Listener {
@@ -30,28 +34,72 @@ public class SetPriceTask implements Listener {
             return;
         }
 
-        try {
-            if (event.getMessage().equalsIgnoreCase("cancel")) {
-                sendPlayerMessage(player, config.getString("messages.priceChangeCancelled"));
-                event.setCancelled(true);
-                HandlerList.unregisterAll(this);
-                return;
-            }
-            double price = Double.parseDouble(event.getMessage());
+        String message = event.getMessage().trim();
 
+        // cancel keyword
+        if (message.equalsIgnoreCase("cancel")) {
             event.setCancelled(true);
-
             Bukkit.getScheduler().runTask(plugin, () -> {
-                callback.onPriceSet(price, slot);
+                sendPlayerMessage(player, config.getString("messages.priceChangeCancelled"));
                 HandlerList.unregisterAll(this);
             });
+            return;
+        }
 
-            HandlerList.unregisterAll(this);
-
+        double price;
+        try {
+            price = parsePrice(message);
         } catch (NumberFormatException e) {
             event.setCancelled(true);
             sendPlayerMessage(player, config.getString("messages.invalidPrice"));
+            return;
         }
 
+        final double finalPrice = price;
+        event.setCancelled(true);
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            callback.onPriceSet(finalPrice, slot);
+            HandlerList.unregisterAll(this);
+        });
+    }
+
+    /**
+     * Parse a user input price robustly:
+     * - strips non numeric / separator characters,
+     * - tries dot-normalized parse,
+     * - then tries NumberFormat for common locales (US, FR).
+     */
+    private double parsePrice(String input) throws NumberFormatException {
+        if (input == null) throw new NumberFormatException("null input");
+
+        String orig = input.trim();
+
+        // Keep only digits, comma, dot and minus sign (removes € $ letters § color codes, spaces, etc.)
+        String sanitized = orig.replaceAll("[^0-9,\\.-]", "");
+
+        if (sanitized.isEmpty()) throw new NumberFormatException("empty after sanitize");
+
+        // 1) quick try: replace comma with dot (accept "10", "10.00", "10,00")
+        try {
+            return Double.parseDouble(sanitized.replace(',', '.'));
+        } catch (NumberFormatException ignored) {
+        }
+
+        // 2) try parsing with NumberFormat for common locales and ensure full consumption
+        NumberFormat[] formats = new NumberFormat[]{
+                NumberFormat.getInstance(Locale.US),     // 1,234.56
+                NumberFormat.getInstance(Locale.FRANCE)  // 1.234,56
+        };
+
+        for (NumberFormat nf : formats) {
+            ParsePosition pos = new ParsePosition(0);
+            Number num = nf.parse(sanitized, pos);
+            if (num != null && pos.getIndex() == sanitized.length()) {
+                return num.doubleValue();
+            }
+        }
+
+        // nothing matched
+        throw new NumberFormatException("Invalid number: " + input);
     }
 }
