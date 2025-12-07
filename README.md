@@ -1,19 +1,4 @@
 
-
-# ShopkeepersAddon (Fork) – Improved Price Input Handling
-
-**✅ This fork fixes a critical issue with price editing in the original ShopkeepersAddon.**  
-In the official version, entering a price in chat often results in the message “Invalid Price!” because many servers use chat plugins (e.g. ChatColor2, TAB, LPC, FreedomChat) that inject formatting or color codes into messages.  
-
-This fork updates the price parsing logic to:  
-- Remove color codes and formatting from chat inputs  
-- Accept both `10`, `10.00`, and `10,00` formats  
-- Support US and EU number styles  
-- Prevent `NumberFormatException` crashes  
-- Properly unregister the listener on the main thread  
-
-**Only the `SetPriceTask` class was modified! The rest of the plugin remains unchanged.**  
-
 ![banner](https://cdn.modrinth.com/data/cached_images/790af409b42cc8c9cd15b8d933a1dc2addf9ffd8.png)
 ## 🚀 **Transform Your Server's Economy!**
 
