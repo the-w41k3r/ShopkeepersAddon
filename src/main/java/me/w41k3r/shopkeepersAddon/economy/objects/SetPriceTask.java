@@ -104,8 +104,8 @@ public class SetPriceTask implements Listener {
 
         for (NumberFormat nf : formats) {
             ParsePosition pos = new ParsePosition(0);
-            Number num = nf.parse(sanitized, pos);
-            if (num != null && pos.getIndex() == sanitized.length()) {
+            Number num = nf.parse(orig, pos);
+            if (num != null && pos.getIndex() == orig.length()) {
                 return num.doubleValue();
             }
         }
