@@ -1,4 +1,6 @@
 
+# ShopkeepersAddon - Economy & GUI Navigation Shopkeepers
+
 ![banner](https://cdn.modrinth.com/data/cached_images/790af409b42cc8c9cd15b8d933a1dc2addf9ffd8.png)
 ## 🚀 **Transform Your Server's Economy!**
 
