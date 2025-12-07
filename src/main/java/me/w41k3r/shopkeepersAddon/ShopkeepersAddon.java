@@ -1,5 +1,6 @@
 package me.w41k3r.shopkeepersAddon;
 
+import me.w41k3r.shopkeepersAddon.gui.listeners.EconomyListeners;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -293,6 +294,7 @@ public final class ShopkeepersAddon extends JavaPlugin {
 
         if (rsp == null) {
             debugLog("Economy provider not set yet, listening for registration.");
+            plugin.getServer().getPluginManager().registerEvents(new EconomyListeners(), this);
             return;
         }
 
