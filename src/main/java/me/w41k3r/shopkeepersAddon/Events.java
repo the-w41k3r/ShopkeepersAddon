@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.server.ServiceRegisterEvent;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.plugin;
 import static me.w41k3r.shopkeepersAddon.gui.managers.SkinsManager.*;
@@ -38,9 +39,11 @@ public class Events implements Listener {
         if (ShopkeepersAddon.Money != null)
             return;
 
-        if (event.getProvider() instanceof final Economy economy) {
-            ShopkeepersAddon.Money = economy;
-            ShopkeepersAddon.debugLog("Economy provider set to: " + economy.getName());
+        final RegisteredServiceProvider<?> provider = event.getProvider();
+
+        if (provider.getService().equals(Economy.class)) {
+            ShopkeepersAddon.Money = (Economy) provider;
+            ShopkeepersAddon.debugLog("Economy provider set to: " + ShopkeepersAddon.Money.getName());
         }
     }
 }
