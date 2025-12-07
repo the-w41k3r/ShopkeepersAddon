@@ -74,10 +74,11 @@ public class SetPriceTask implements Listener {
     }
 
     /**
-     * Parse a user input price robustly:
-     * - strips non-numeric / separator characters,
-     * - tries dot-normalized parse,
-     * - then tries NumberFormat for common locales (US, FR).
+     * Parses a user input price robustly:
+     * - Validates that the input matches a supported numeric format (digits, optional decimal separator).
+     * - Attempts to parse using dot-normalized format.
+     * - Then tries NumberFormat for common locales (US, FR).
+     * Note: This method does not strip or sanitize non-numeric characters; it only accepts valid formats.
      */
     private double parsePrice(String input) throws NumberFormatException {
         if (input == null) throw new NumberFormatException("null input");
