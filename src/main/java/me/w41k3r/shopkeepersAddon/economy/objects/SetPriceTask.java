@@ -67,7 +67,7 @@ public class SetPriceTask implements Listener {
 
     /**
      * Parse a user input price robustly:
-     * - strips non numeric / separator characters,
+     * - strips non-numeric / separator characters,
      * - tries dot-normalized parse,
      * - then tries NumberFormat for common locales (US, FR).
      */
