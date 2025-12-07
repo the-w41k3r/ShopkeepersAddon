@@ -6,9 +6,11 @@ import me.w41k3r.shopkeepersAddon.economy.events.EconomyListener;
 import me.w41k3r.shopkeepersAddon.gui.listeners.GUIListeners;
 import me.w41k3r.shopkeepersAddon.gui.listeners.PacketsHijacking;
 import me.w41k3r.shopkeepersAddon.gui.listeners.UpdateListeners;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.server.ServiceRegisterEvent;
 
 import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.plugin;
 import static me.w41k3r.shopkeepersAddon.gui.managers.SkinsManager.*;
@@ -31,4 +33,14 @@ public class Events implements Listener {
         saveSkinToCache(event.getPlayer());
     }
 
+    @EventHandler
+    public void onServiceRegisterEvent(final ServiceRegisterEvent event) {
+        if (ShopkeepersAddon.Money != null)
+            return;
+
+        if (event.getProvider() instanceof final Economy economy) {
+            ShopkeepersAddon.Money = economy;
+            ShopkeepersAddon.debugLog("Economy provider set to: " + economy.getName());
+        }
+    }
 }
