@@ -51,7 +51,9 @@ public class SetPriceTask implements Listener {
             price = parsePrice(message);
         } catch (NumberFormatException e) {
             event.setCancelled(true);
-            sendPlayerMessage(player, config.getString("messages.invalidPrice"));
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                sendPlayerMessage(player, config.getString("messages.invalidPrice"));
+            });
             return;
         }
 
