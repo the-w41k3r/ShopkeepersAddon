@@ -97,10 +97,7 @@ public final class ShopkeepersAddon extends JavaPlugin {
             return;
         }
 
-        if (!setupVault()) {
-            logger.severe("Disabling plugin due to Vault dependency error!");
-            Bukkit.getPluginManager().disablePlugin(this);
-        }
+        setupVault();
     }
 
     private void initializeComponents() {
@@ -283,10 +280,11 @@ public final class ShopkeepersAddon extends JavaPlugin {
         plugin = null;
     }
 
-    private boolean setupVault() {
+    private void setupVault() {
         if (Bukkit.getPluginManager().getPlugin(VAULT_PLUGIN_NAME) == null) {
             logger.severe("Vault plugin not found! Please install Vault.");
-            return false;
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
 
         RegisteredServiceProvider<Economy> rsp = getServer()
@@ -294,13 +292,12 @@ public final class ShopkeepersAddon extends JavaPlugin {
                 .getRegistration(Economy.class);
 
         if (rsp == null) {
-            logger.severe("No economy provider found! Please install an economy plugin like EssentialsX, CMILib, etc.");
-            return false;
+            debugLog("Economy provider not set yet, listening for registration.");
+            return;
         }
 
         Money = rsp.getProvider();
         debugLog("Economy provider set to: " + Money.getName());
-        return true;
     }
 
     private static String formatPrefix(String rawPrefix) {
