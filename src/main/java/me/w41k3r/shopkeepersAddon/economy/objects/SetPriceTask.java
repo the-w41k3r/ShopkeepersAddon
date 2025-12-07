@@ -76,14 +76,14 @@ public class SetPriceTask implements Listener {
 
         String orig = input.trim();
 
-        // Keep only digits, comma, dot and minus sign (removes € $ letters § color codes, spaces, etc.)
-        String sanitized = orig.replaceAll("[^0-9,\\.-]", "");
-
-        if (sanitized.isEmpty()) throw new NumberFormatException("empty after sanitize");
+        // Validate input: only allow valid number formats (optional leading minus, digits, optional single decimal separator)
+        if (!orig.matches("^-?\\d+([.,]\\d+)?$")) {
+            throw new NumberFormatException("Invalid number format: " + orig);
+        }
 
         // 1) quick try: replace comma with dot (accept "10", "10.00", "10,00")
         try {
-            return Double.parseDouble(sanitized.replace(',', '.'));
+            return Double.parseDouble(orig.replace(',', '.'));
         } catch (NumberFormatException ignored) {
         }
 
