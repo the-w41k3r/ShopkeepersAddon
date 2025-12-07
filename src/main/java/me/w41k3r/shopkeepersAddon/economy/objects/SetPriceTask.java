@@ -57,6 +57,12 @@ public class SetPriceTask implements Listener {
             return;
         }
 
+        // Validate that the price is positive
+        if (price <= 0) {
+            event.setCancelled(true);
+            sendPlayerMessage(player, config.getString("messages.invalidPrice"));
+            return;
+        }
         final double finalPrice = price;
         event.setCancelled(true);
         Bukkit.getScheduler().runTask(plugin, () -> {
