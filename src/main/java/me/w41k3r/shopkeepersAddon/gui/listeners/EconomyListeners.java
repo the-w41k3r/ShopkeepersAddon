@@ -16,7 +16,7 @@ public final class EconomyListeners implements Listener {
         final RegisteredServiceProvider<?> provider = event.getProvider();
 
         if (provider.getService().equals(Economy.class)) {
-            ShopkeepersAddon.Money = (Economy) provider;
+            ShopkeepersAddon.Money = (Economy) provider.getProvider();
             ShopkeepersAddon.debugLog("Economy provider set to: " + ShopkeepersAddon.Money.getName());
         }
     }
