@@ -30,5 +30,4 @@ public class Events implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         saveSkinToCache(event.getPlayer());
     }
-
 }
