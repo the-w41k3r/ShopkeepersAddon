@@ -8,6 +8,8 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import net.milkbowl.vault.economy.EconomyResponse;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
@@ -237,8 +239,20 @@ public class EconomyManager {
         }
 
         try {
-            Money.withdrawPlayer(from, amount);
-            Money.depositPlayer(to, amount);
+            EconomyResponse withdrawResponse = Money.withdrawPlayer(from, amount);
+            if (!withdrawResponse.transactionSuccess()) {
+                Bukkit.getLogger().log(Level.SEVERE, "Failed to withdraw " + formatPrice(amount) +
+                        " from " + from.getName() + ": " + withdrawResponse.errorMessage);
+                return false;
+            }
+            EconomyResponse depositResponse = Money.depositPlayer(to, amount);
+            if (!depositResponse.transactionSuccess()) {
+                // Deposit failed - refund the sender
+                Money.depositPlayer(from, amount);
+                Bukkit.getLogger().log(Level.SEVERE, "Failed to deposit " + formatPrice(amount) +
+                        " to " + to.getName() + ": " + depositResponse.errorMessage + " - refunded " + from.getName());
+                return false;
+            }
             debugLog("Transferred " + formatPrice(amount) + " from " +
                     from.getName() + " to " + to.getName());
             return true;

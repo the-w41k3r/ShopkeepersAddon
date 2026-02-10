@@ -10,9 +10,8 @@ import com.nisovin.shopkeepers.api.shopkeeper.player.PlayerShopkeeper;
 import me.w41k3r.shopkeepersAddon.economy.objects.ShopEditTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
-import org.bukkit.configuration.file.YamlConfiguration;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,7 +23,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantInventory;
 import org.bukkit.inventory.MerchantRecipe;
 
-import java.io.File;
+import net.milkbowl.vault.economy.EconomyResponse;
+import org.bukkit.OfflinePlayer;
+
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,8 +42,6 @@ import static me.w41k3r.shopkeepersAddon.gui.managers.Utils.setItemsOnTradeSlots
 public class EconomyListener implements Listener {
 
     private static final int REMOVE_ECONOMY_ITEM_DELAY = 1;
-    private static final String SHOPKEEPERS_DATA_PATH = "Shopkeepers/data/save.yml";
-    private static final String OWNER_UUID_PATH = ".owner uuid";
     // Added throttling to prevent multiple rapid fire events
     private final Map<UUID, Long> lastTradeTime = new ConcurrentHashMap<>();
     private static final long TRADE_COOLDOWN_MS = 100; // 100ms cooldown between trades
@@ -96,12 +95,19 @@ public class EconomyListener implements Listener {
             debugLog("Cancelled trade with economy item as result.");
             return;
         }
-        debugLog("Trading now!");
+
+        // Prevent same-item-for-same-item trades (no-op trades that could be exploited)
+        if (isSameItemTrade(recipe)) {
+            event.setCancelled(true);
+            sendPlayerMessage(event.getPlayer(), config.getString("messages.sameItemTrade",
+                    "&cThis trade has been disabled (same item for same item)."));
+            debugLog("Blocked same-item-for-same-item trade.");
+            return;
+        }
 
         debugLog("Processing shopkeeper trade!");
         Player player = event.getPlayer();
         Shopkeeper shopkeeper = event.getShopkeeper();
-
 
         if (event.getClickEvent().isShiftClick()){
             event.setCancelled(true);
@@ -110,17 +116,55 @@ public class EconomyListener implements Listener {
         }
 
         if (isEconomyItem(recipe.getItem1().copy())) {
+            event.setCancelled(true);
             processEconomyTrade(player, shopkeeper, recipe);
         }
     }
 
+    /**
+     * Checks if a trade is same-item-for-same-item (ignoring stack size).
+     * This prevents no-op trades that could be exploited or cause confusion.
+     */
+    private boolean isSameItemTrade(TradingRecipe recipe) {
+        ItemStack item1 = recipe.getItem1().copy();
+        ItemStack result = recipe.getResultItem().copy();
+
+        // Skip economy items - they're virtual currency, not real items
+        if (isEconomyItem(item1) || isEconomyItem(result)) return false;
+
+        // Compare item type and metadata (ignore stack size)
+        item1.setAmount(1);
+        result.setAmount(1);
+        return item1.isSimilar(result);
+    }
+
     private void processEconomyTrade(Player player, Shopkeeper shopkeeper, TradingRecipe recipe) {
         double price = getPrice(recipe.getItem1().copy());
-        Money.withdrawPlayer(player, price);
+        EconomyResponse withdrawResponse = Money.withdrawPlayer(player, price);
+        if (!withdrawResponse.transactionSuccess()) {
+            debugLog("Failed to withdraw " + formatPrice(price) + " from " + player.getName() + ": " + withdrawResponse.errorMessage);
+            return;
+        }
 
         if (!(shopkeeper instanceof AdminShopkeeper)) {
             depositToShopOwner(shopkeeper, price);
         }
+
+        // Give the result item to the player (event is cancelled so Shopkeepers won't do it)
+        ItemStack resultItem = recipe.getResultItem().copy();
+        player.getInventory().addItem(resultItem);
+
+        // Remove the stock from the shop chest (for player shops only)
+        if (shopkeeper instanceof PlayerShopkeeper playerShopkeeper) {
+            try {
+                if (playerShopkeeper.getContainer().getState() instanceof Container container) {
+                    container.getInventory().removeItem(resultItem);
+                }
+            } catch (Exception e) {
+                Bukkit.getLogger().log(Level.SEVERE, "Failed to remove stock from shop container", e);
+            }
+        }
+
         sendPlayerMessage(player, config.getString("messages.buySuccess", "§aYou have purchased %item% for %price%.")
                 .replace("%item%", recipe.getResultItem().getItemMeta().getDisplayName().isEmpty() ? recipe.getResultItem().getType().name() : recipe.getResultItem().getItemMeta().getDisplayName())
                 .replace("%price%", formatPrice(price)));
@@ -135,22 +179,26 @@ public class EconomyListener implements Listener {
             return;
         }
 
-        Money.withdrawPlayer(player, totalPrice);
+        EconomyResponse withdrawResponse = Money.withdrawPlayer(player, totalPrice);
+        if (!withdrawResponse.transactionSuccess()) {
+            debugLog("Failed to withdraw " + formatPrice(totalPrice) + " from " + player.getName() + ": " + withdrawResponse.errorMessage);
+            return;
+        }
 
 
         ItemStack resultItem = recipe.getResultItem().copy();
         resultItem.setAmount(tradeCount*resultItem.getAmount());
 
         player.getInventory().addItem(resultItem);
-        if (!(shopkeeper instanceof AdminShopkeeper)) {
-            PlayerShopkeeper playerShopkeeper = (PlayerShopkeeper) shopkeeper;
-            Container container = playerShopkeeper.getContainer().getState() instanceof Container cont ? cont : null;
-            if (container != null) {
-                Inventory inv = container.getInventory();
-                inv.removeItem(resultItem);
+        if (!(shopkeeper instanceof AdminShopkeeper) && shopkeeper instanceof PlayerShopkeeper playerShopkeeper) {
+            try {
+                if (playerShopkeeper.getContainer().getState() instanceof Container container) {
+                    container.getInventory().removeItem(resultItem);
+                }
+            } catch (Exception e) {
+                Bukkit.getLogger().log(Level.SEVERE, "Failed to remove stock from shop container (bulk)", e);
             }
             depositToShopOwner(shopkeeper, totalPrice);
-
         }
 
         sendPlayerMessage(player, config.getString("messages.buySuccess", "§aYou have purchased %item% for %price%.")
@@ -161,15 +209,19 @@ public class EconomyListener implements Listener {
 
     private void depositToShopOwner(Shopkeeper shopkeeper, double price) {
         try {
-            String shopkeeperId = String.valueOf(shopkeeper.getId());
-            File dataFile = new File(plugin.getDataFolder().getParentFile(), SHOPKEEPERS_DATA_PATH);
-            YamlConfiguration dataConfig = YamlConfiguration.loadConfiguration(dataFile);
-            String ownerUUID = dataConfig.getString(shopkeeperId + OWNER_UUID_PATH);
+            if (!(shopkeeper instanceof PlayerShopkeeper playerShopkeeper)) {
+                debugLog("Cannot deposit to non-player shopkeeper: " + shopkeeper.getId());
+                return;
+            }
 
-            if (ownerUUID != null) {
-                Money.depositPlayer(ownerUUID, price);
+            UUID ownerUUID = playerShopkeeper.getOwnerUUID();
+            OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerUUID);
+            EconomyResponse response = Money.depositPlayer(owner, price);
+            if (!response.transactionSuccess()) {
+                Bukkit.getLogger().log(Level.SEVERE, "Failed to deposit " + formatPrice(price) +
+                        " to shop owner " + ownerUUID + ": " + response.errorMessage);
             } else {
-                debugLog("Could not find owner UUID for shopkeeper: " + shopkeeperId);
+                debugLog("Deposited " + formatPrice(price) + " to shop owner " + playerShopkeeper.getOwnerName());
             }
         } catch (Exception e) {
             Bukkit.getLogger().log(Level.SEVERE, "Failed to deposit money to shop owner", e);
@@ -214,13 +266,15 @@ public class EconomyListener implements Listener {
     }
 
     private void processEconomyTradeClick(InventoryClickEvent event, Player player, MerchantRecipe recipe) {
+        // Cancel the event immediately - we handle everything manually
+        event.setCancelled(true);
+
         Shopkeeper shopkeeper = ShopkeepersAPI.getUIRegistry().getUISession(player).getShopkeeper();
         boolean isAdminShopkeeper = shopkeeper instanceof AdminShopkeeper;
         double pricePerTrade = getPrice(recipe.getResult());
 
         int maxTrades = calculateMaxTrades(event, recipe, shopkeeper, pricePerTrade);
         if (maxTrades <= 0) {
-            event.setCancelled(true);
             return;
         }
 
@@ -235,6 +289,8 @@ public class EconomyListener implements Listener {
                 .replace("%item%", recipe.getIngredients().getFirst().getItemMeta().getDisplayName().isEmpty() ? recipe.getIngredients().getFirst().getType().name() : recipe.getIngredients().getFirst().getItemMeta().getDisplayName())
                 .replace("%price%", formatPrice(totalPrice)));
 
+        // Clean up any economy items that might have leaked into the player's inventory
+        scheduleRemoveEconomyItem(player);
     }
 
     private int calculateMaxTrades(InventoryClickEvent event, MerchantRecipe recipe, Shopkeeper shopkeeper, double pricePerTrade) {
@@ -286,12 +342,13 @@ public class EconomyListener implements Listener {
 
     private double getOwnerMoney(Shopkeeper shopkeeper) {
         try {
-            String shopkeeperId = String.valueOf(shopkeeper.getId());
-            File dataFile = new File(plugin.getDataFolder().getParentFile(), SHOPKEEPERS_DATA_PATH);
-            YamlConfiguration dataConfig = YamlConfiguration.loadConfiguration(dataFile);
-            String ownerUUID = dataConfig.getString(shopkeeperId + OWNER_UUID_PATH);
+            if (!(shopkeeper instanceof PlayerShopkeeper playerShopkeeper)) {
+                return 0;
+            }
 
-            return ownerUUID != null ? Money.getBalance(ownerUUID) : 0;
+            UUID ownerUUID = playerShopkeeper.getOwnerUUID();
+            OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerUUID);
+            return Money.getBalance(owner);
         } catch (Exception e) {
             Bukkit.getLogger().log(Level.SEVERE, "Failed to get owner money for shopkeeper: " + shopkeeper.getId(), e);
             return 0;
@@ -299,11 +356,22 @@ public class EconomyListener implements Listener {
     }
 
     private void handleAdminTrade(InventoryClickEvent event, MerchantRecipe recipe, Player player, int maxTrades, double totalPrice) {
-        Money.depositPlayer(player, totalPrice);
+        EconomyResponse depositResponse = Money.depositPlayer(player, totalPrice);
+        if (!depositResponse.transactionSuccess()) {
+            Bukkit.getLogger().log(Level.SEVERE, "Failed to deposit " + formatPrice(totalPrice) +
+                    " to player " + player.getName() + " (admin trade): " + depositResponse.errorMessage);
+            event.setCancelled(true);
+            return;
+        }
         removeIngredients(event.getClickedInventory(), recipe, maxTrades);
     }
 
     private void handlePlayerShopTrade(InventoryClickEvent event, MerchantRecipe recipe, Player player, Shopkeeper shopkeeper, int maxTrades, double totalPrice) {
+        if (!(shopkeeper instanceof PlayerShopkeeper playerShopkeeper)) {
+            event.setCancelled(true);
+            return;
+        }
+
         double ownerMoney = getOwnerMoney(shopkeeper);
         if (ownerMoney < totalPrice) {
             sendPlayerMessage(player, config.getString("messages.noMoneyOwner", "The shop owner doesn't have enough money!"));
@@ -311,28 +379,29 @@ public class EconomyListener implements Listener {
             return;
         }
 
-        // Transfer money
-        String ownerUUID = getOwnerUUID(shopkeeper);
-        if (ownerUUID != null) {
-            Money.withdrawPlayer(ownerUUID, totalPrice);
-            Money.depositPlayer(player, totalPrice);
+        // Transfer money from owner to buyer
+        UUID ownerUUID = playerShopkeeper.getOwnerUUID();
+        OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerUUID);
+        EconomyResponse withdrawResponse = Money.withdrawPlayer(owner, totalPrice);
+        if (!withdrawResponse.transactionSuccess()) {
+            Bukkit.getLogger().log(Level.SEVERE, "Failed to withdraw " + formatPrice(totalPrice) +
+                    " from shop owner " + ownerUUID + ": " + withdrawResponse.errorMessage);
+            event.setCancelled(true);
+            return;
+        }
+        EconomyResponse depositResponse = Money.depositPlayer(player, totalPrice);
+        if (!depositResponse.transactionSuccess()) {
+            // Deposit failed - refund the owner
+            Money.depositPlayer(owner, totalPrice);
+            Bukkit.getLogger().log(Level.SEVERE, "Failed to deposit " + formatPrice(totalPrice) +
+                    " to buyer " + player.getName() + ": " + depositResponse.errorMessage + " - refunded owner");
+            event.setCancelled(true);
+            return;
         }
 
         // Handle items
         removeIngredients(event.getClickedInventory(), recipe, maxTrades);
         depositIngredientsToContainer(shopkeeper, recipe, maxTrades);
-    }
-
-    private String getOwnerUUID(Shopkeeper shopkeeper) {
-        try {
-            String shopkeeperId = String.valueOf(shopkeeper.getId());
-            File dataFile = new File(plugin.getDataFolder().getParentFile(), SHOPKEEPERS_DATA_PATH);
-            YamlConfiguration dataConfig = YamlConfiguration.loadConfiguration(dataFile);
-            return dataConfig.getString(shopkeeperId + OWNER_UUID_PATH);
-        } catch (Exception e) {
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to get owner UUID for shopkeeper: " + shopkeeper.getId(), e);
-            return null;
-        }
     }
 
     private void removeIngredients(Inventory inventory, MerchantRecipe recipe, int multiplier) {
@@ -349,14 +418,18 @@ public class EconomyListener implements Listener {
         if (!(shopkeeper instanceof PlayerShopkeeper playerShopkeeper)) return;
 
         try {
-            Inventory container = ((Chest) playerShopkeeper.getContainer().getState()).getBlockInventory();
+            if (!(playerShopkeeper.getContainer().getState() instanceof Container container)) {
+                debugLog("Shop container is not a Container type, cannot deposit ingredients");
+                return;
+            }
+            Inventory inv = container.getInventory();
 
             for (ItemStack ingredient : recipe.getIngredients()) {
                 if (ingredient == null || ingredient.getType() == Material.AIR) continue;
 
                 ItemStack toAdd = ingredient.clone();
                 toAdd.setAmount(ingredient.getAmount() * multiplier);
-                container.addItem(toAdd);
+                inv.addItem(toAdd);
             }
         } catch (Exception e) {
             Bukkit.getLogger().log(Level.SEVERE, "Failed to deposit ingredients to shop container", e);
