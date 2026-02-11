@@ -10,22 +10,24 @@ import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.plugin;
 
 public class PersistantDataManager {
 
+    private static final NamespacedKey ITEM_PRICE_KEY = new NamespacedKey(plugin, "itemprice");
+
     /*
     * */
     public static boolean isEconomyItem(ItemStack item) {
         if (item == null || item.getItemMeta() == null || item.getItemMeta().getPersistentDataContainer() == null) {
             return false;
         }
-        return item.getItemMeta().getPersistentDataContainer().has(new NamespacedKey(plugin, "itemprice"), PersistentDataType.DOUBLE);
+        return item.getItemMeta().getPersistentDataContainer().has(ITEM_PRICE_KEY, PersistentDataType.DOUBLE);
     }
 
     public static ItemMeta setPrice(ItemMeta itemMeta, Double value) {
-        itemMeta.getPersistentDataContainer().set(new NamespacedKey(plugin, "itemprice"), PersistentDataType.DOUBLE, value);
+        itemMeta.getPersistentDataContainer().set(ITEM_PRICE_KEY, PersistentDataType.DOUBLE, value);
         return itemMeta;
     }
 
     public static Double getPrice(ItemStack item) {
-        double price = item.getItemMeta().getPersistentDataContainer().get(new NamespacedKey(plugin, "itemprice"), PersistentDataType.DOUBLE);
+        double price = item.getItemMeta().getPersistentDataContainer().get(ITEM_PRICE_KEY, PersistentDataType.DOUBLE);
         debugLog("Price of item: " + price);
         return price;
     }

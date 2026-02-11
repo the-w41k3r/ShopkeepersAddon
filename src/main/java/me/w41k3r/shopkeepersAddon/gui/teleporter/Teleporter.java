@@ -13,12 +13,6 @@ import static me.w41k3r.shopkeepersAddon.gui.managers.PlayerShopsManager.fetchSh
 import static me.w41k3r.shopkeepersAddon.gui.managers.PersistentGUIDataManager.getCurrentPage;
 
 public class Teleporter {
-    // This class is intended to handle teleportation-related functionalities.
-    // Currently, it does not contain any methods or fields.
-    // Future implementations may include:
-    // - Teleporting players to specific locations
-    // - Managing teleportation cooldowns
-    // - Handling teleportation confirmations
 
     public static void teleportToShop(InventoryClickEvent event, UUID uuid) {
         Player player = (Player) event.getWhoClicked();
@@ -37,8 +31,10 @@ public class Teleporter {
                         : config.getInt("adminShops.teleport.warmup");
                 allowMovement = config.getBoolean("adminShops.teleport.allowMovement");
                 successMessage = config.getString("messages.adminShops.teleport.success", "Teleporting to shop...");
-                cancelMessage = config.getString("messages.adminShops.teleport.cancel", "Teleportation cancelled due to movement.");
-                errorMessage = config.getString("messages.adminShops.teleport.noShop", "Teleportation cancelled due to movement.");
+                cancelMessage = config.getString("messages.adminShops.teleport.cancel",
+                        "Teleportation cancelled due to movement.");
+                errorMessage = config.getString("messages.adminShops.teleport.noShop",
+                        "Teleportation cancelled due to movement.");
                 Location teleportLocation = shopkeeper.getLocation();
                 TeleportWarmup adminShopWarmup = new TeleportWarmup(
                         player,
@@ -51,8 +47,7 @@ public class Teleporter {
                         warmupTime,
                         plugin,
                         true,
-                        shopkeeper.getUniqueId()
-                );
+                        shopkeeper.getUniqueId());
                 player.closeInventory();
                 adminShopWarmup.startWarmup();
 
@@ -70,8 +65,10 @@ public class Teleporter {
                 allowMovement = config.getBoolean("playerShops.teleport.allowMovement");
 
                 successMessage = config.getString("messages.playerShops.teleport.success", "Teleporting to shop...");
-                cancelMessage = config.getString("messages.playerShops.teleport.cancel", "Teleportation cancelled due to movement.");
-                errorMessage = config.getString("messages.playerShops.teleport.noShop", "Teleportation cancelled due to movement.");
+                cancelMessage = config.getString("messages.playerShops.teleport.cancel",
+                        "Teleportation cancelled due to movement.");
+                errorMessage = config.getString("messages.playerShops.teleport.noShop",
+                        "Teleportation cancelled due to movement.");
                 TeleportWarmup playerShopWarmup = new TeleportWarmup(
                         player,
                         player.getLocation(),
@@ -83,17 +80,16 @@ public class Teleporter {
                         warmupTime,
                         plugin,
                         false,
-                        UUID.randomUUID()
-                );
+                        UUID.randomUUID());
                 player.closeInventory();
                 playerShopWarmup.startWarmup();
                 debugLog("Teleporting to player shop: " + uuid + " at location: " + shopLocation);
                 break;
             default:
-                debugLog("Unknown inventory type for teleportation: " + getCurrentPage(event.getClickedInventory().getItem(49)));
+                debugLog("Unknown inventory type for teleportation: "
+                        + getCurrentPage(event.getClickedInventory().getItem(49)));
                 player.sendMessage(config.getString("messages.teleport.error", "Unknown teleportation request."));
         }
     }
-
 
 }

@@ -1,35 +1,34 @@
 package me.w41k3r.shopkeepersAddon;
 
-import me.w41k3r.shopkeepersAddon.gui.listeners.EconomyListeners;
-import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
-
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import static me.w41k3r.shopkeepersAddon.Commands.initCommands;
 import static me.w41k3r.shopkeepersAddon.Events.initEvents;
 import static me.w41k3r.shopkeepersAddon.gui.BaseGUIHandlers.getFillerItem;
 import static me.w41k3r.shopkeepersAddon.gui.init.InitAdminPages.initPages;
 import static me.w41k3r.shopkeepersAddon.gui.managers.FetchShopkeepersManager.fetchShopkeepers;
-import static me.w41k3r.shopkeepersAddon.gui.models.Variables.*;
+import static me.w41k3r.shopkeepersAddon.gui.models.Variables.blacklistedItems;
+import static me.w41k3r.shopkeepersAddon.gui.models.Variables.lastUpdateTime;
 
 public final class ShopkeepersAddon extends JavaPlugin {
 
-    private static final String VAULT_PLUGIN_NAME = "Vault";
     private static final String SKINS_RESTORER_PLUGIN_NAME = "SkinsRestorer";
     private static final String CONFIG_DEBUG_PATH = "debug";
     private static final String CONFIG_ECONOMY_ENABLED_PATH = "economy.enabled";
@@ -37,7 +36,7 @@ public final class ShopkeepersAddon extends JavaPlugin {
     private static final String CONFIG_BLACKLIST_PATH = "playerShops.itemBlacklist";
     private static final String BACKUP_FOLDER_NAME = "backups";
     private static final String CONFIG_VERSION_PATH = "config-version";
-    private static final double CURRENT_CONFIG_VERSION = 1.0;
+    private static final double CURRENT_CONFIG_VERSION = 1.1;
 
     public static FileConfiguration config;
     public static ShopkeepersAddon plugin;
@@ -45,7 +44,6 @@ public final class ShopkeepersAddon extends JavaPlugin {
     public static boolean debugMode;
     public static ItemStack adminFillerItem;
     public static ItemStack playerFillerItem;
-    public static Economy Money;
 
     private static String prefix;
 
@@ -98,7 +96,8 @@ public final class ShopkeepersAddon extends JavaPlugin {
             return;
         }
 
-        setupVault();
+        // setupVault(); -> Removed
+        debugLog("Economy system initialized (Universal Command-Based)");
     }
 
     private void initializeComponents() {
@@ -153,16 +152,15 @@ public final class ShopkeepersAddon extends JavaPlugin {
                     return;
                 }
                 FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(
-                        new InputStreamReader(defaultConfigStream)
-                );
+                        new InputStreamReader(defaultConfigStream));
 
                 boolean configChanged = addMissingKeysSimple(config, defaultConfig);
 
                 config.set(CONFIG_VERSION_PATH, CURRENT_CONFIG_VERSION);
 
                 if (configChanged) {
-                    saveUpdatedConfig(config);   // Write changes to disk
-                    plugin.reloadConfig();       // Reload from disk
+                    saveUpdatedConfig(config); // Write changes to disk
+                    plugin.reloadConfig(); // Reload from disk
                     config = plugin.getConfig(); // Refresh reference
                     logger.info("Config updated successfully to version " + CURRENT_CONFIG_VERSION);
                 } else {
@@ -177,9 +175,6 @@ public final class ShopkeepersAddon extends JavaPlugin {
             e.printStackTrace();
         }
     }
-
-
-
 
     private static void createConfigBackup() {
         try {
@@ -208,7 +203,6 @@ public final class ShopkeepersAddon extends JavaPlugin {
             logger.warning("Failed to create config backup: " + e.getMessage());
         }
     }
-
 
     public static void validateConfig() {
         try {
@@ -246,7 +240,6 @@ public final class ShopkeepersAddon extends JavaPlugin {
     private static boolean addMissingKeysSimple(FileConfiguration currentConfig, FileConfiguration defaultConfig) {
         boolean changed = false;
 
-
         for (String key : defaultConfig.getKeys(true)) {
             // Skip the version key - we handle that separately
             if (CONFIG_VERSION_PATH.equals(key)) {
@@ -273,34 +266,12 @@ public final class ShopkeepersAddon extends JavaPlugin {
         return changed;
     }
 
-
-
     private void cleanupResources() {
         // Add any cleanup logic here if needed
-        Money = null;
         plugin = null;
     }
 
-    private void setupVault() {
-        if (Bukkit.getPluginManager().getPlugin(VAULT_PLUGIN_NAME) == null) {
-            logger.severe("Vault plugin not found! Please install Vault.");
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
-
-        RegisteredServiceProvider<Economy> rsp = getServer()
-                .getServicesManager()
-                .getRegistration(Economy.class);
-
-        if (rsp == null) {
-            debugLog("Economy provider not set yet, listening for registration.");
-            plugin.getServer().getPluginManager().registerEvents(new EconomyListeners(), this);
-            return;
-        }
-
-        Money = rsp.getProvider();
-        debugLog("Economy provider set to: " + Money.getName());
-    }
+    // setupVault removed
 
     private static String formatPrefix(String rawPrefix) {
         if (rawPrefix == null || rawPrefix.trim().isEmpty()) {
@@ -343,7 +314,7 @@ public final class ShopkeepersAddon extends JavaPlugin {
 
     // Safety check method
     public static boolean isEconomyEnabled() {
-        return Money != null && config.getBoolean(CONFIG_ECONOMY_ENABLED_PATH, false);
+        return config.getBoolean(CONFIG_ECONOMY_ENABLED_PATH, false);
     }
 
     private static void saveUpdatedConfig(FileConfiguration updatedConfig) {

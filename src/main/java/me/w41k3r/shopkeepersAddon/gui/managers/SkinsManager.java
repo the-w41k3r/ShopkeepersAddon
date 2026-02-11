@@ -30,10 +30,13 @@ import static org.bukkit.Bukkit.createPlayerProfile;
 
 public class SkinsManager {
 
-    /* --------------------------------
+    /*
+     * --------------------------------
      * Fetch the skin of the target player.
-     * This will return a URL link such as https://textures.minecraft.net/texture/d5c4ee5ce20aed9e33e866c66caa37178606234b3721084bf01d13320fb2eb3f
-     * -------------------------------- */
+     * This will return a URL link such as https://textures.minecraft.net/texture/
+     * d5c4ee5ce20aed9e33e866c66caa37178606234b3721084bf01d13320fb2eb3f
+     * --------------------------------
+     */
     public static byte[] fetchSkinByte(Player player) {
         try {
             PlayerTextures texture = player.getPlayerProfile().getTextures();
@@ -46,13 +49,13 @@ public class SkinsManager {
     }
     /* -------------------------------- */
 
-
-
-    /* --------------------------------
+    /*
+     * --------------------------------
      * Check if the player has a skin
      * If the skin file does not exist,
      * save the skin to a new skin file along with time of saving.
-     * -------------------------------- */
+     * --------------------------------
+     */
     public static void saveSkinToCache(Player player) {
         Path path = Paths.get(SKIN_CACHE_DIR, player.getUniqueId() + ".skin");
         File skinFile = path.toFile();
@@ -76,10 +79,13 @@ public class SkinsManager {
     }
     /* -------------------------------- */
 
-    /* --------------------------------
-    * Fetch the skin of the target player from skins directory.
-    * This will return a URL link such as https://textures.minecraft.net/texture/d5c4ee5ce20aed9e33e866c66caa37178606234b3721084bf01d13320fb2eb3f
-    * -------------------------------- */
+    /*
+     * --------------------------------
+     * Fetch the skin of the target player from skins directory.
+     * This will return a URL link such as https://textures.minecraft.net/texture/
+     * d5c4ee5ce20aed9e33e866c66caa37178606234b3721084bf01d13320fb2eb3f
+     * --------------------------------
+     */
     public static String fetchSkinURL(UUID uuid) {
         Path path = Paths.get(SKIN_CACHE_DIR, uuid + ".skin");
         File skinFile = path.toFile();
@@ -99,26 +105,23 @@ public class SkinsManager {
         }
     }
 
-
-
-
-
-
-
-
-    /* --------------------------------
+    /*
+     * --------------------------------
      * Get Custom heads.
      * This method creates a custom head item with a given URL and name.
-     * -------------------------------- */
-    public static ItemStack getIcon(String messagePath, String headURL, String targetName, @Nullable String replaceTitle) {
-            return setTarget(getIconHead(messagePath, headURL, targetName, replaceTitle ), targetName);
+     * --------------------------------
+     */
+    public static ItemStack getIcon(String messagePath, String headURL, String targetName,
+            @Nullable String replaceTitle) {
+        return setTarget(getIconHead(messagePath, headURL, targetName, replaceTitle), targetName);
     }
 
     public static ItemStack getIcon(String messagePath, String headURL, int targetName, @Nullable String replaceTitle) {
-        return setPageNumber(getIconHead(messagePath, headURL, String.valueOf(targetName), replaceTitle ), targetName);
+        return setPageNumber(getIconHead(messagePath, headURL, String.valueOf(targetName), replaceTitle), targetName);
     }
 
-    public static ItemStack getIconHead(String messagePath, String headURL, String targetName, @Nullable String replaceTitle) {
+    public static ItemStack getIconHead(String messagePath, String headURL, String targetName,
+            @Nullable String replaceTitle) {
         try {
             ItemStack head = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta meta = (SkullMeta) head.getItemMeta();
@@ -147,7 +150,8 @@ public class SkinsManager {
     }
     /* -------------------------------- */
 
-    public static ItemStack createPlayerShopIcon(String ownerName, UUID ownerUUID, String displayName, @Nullable List<String> lore) {
+    public static ItemStack createPlayerShopIcon(String ownerName, UUID ownerUUID, String displayName,
+            @Nullable List<String> lore) {
 
         ItemStack shopIcon = getIcon("messages.playerShops.buttons",
                 fetchSkinURL(ownerUUID),
@@ -165,8 +169,5 @@ public class SkinsManager {
         return shopIcon;
     }
 
-
     /* -------------------------------- */
-
-
 }

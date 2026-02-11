@@ -20,8 +20,7 @@ public class GUIListeners implements Listener {
     public void onGUIClick(InventoryClickEvent event) {
         if (event.getClickedInventory() == null
                 || !(event.getClickedInventory().getHolder() instanceof VirtualInventoryOwner)
-                || event.getCurrentItem() == null
-        ) {
+                || event.getCurrentItem() == null) {
             return;
         }
         event.setCancelled(true);
@@ -29,9 +28,9 @@ public class GUIListeners implements Listener {
         UUID uuid = null;
         try {
             uuid = UUID.fromString(target);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            debugLog("Invalid UUID target: " + target);
         }
-        catch (IllegalArgumentException e) {}
-        catch (NullPointerException e) {}
 
         if (target != null) {
             if (target.equalsIgnoreCase("ignore")) {

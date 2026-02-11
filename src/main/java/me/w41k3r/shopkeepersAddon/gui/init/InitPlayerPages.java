@@ -10,7 +10,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 import static me.w41k3r.shopkeepersAddon.gui.managers.SkinsManager.*;
 import static me.w41k3r.shopkeepersAddon.gui.models.Variables.*;
@@ -21,12 +20,26 @@ import static org.bukkit.Bukkit.createInventory;
 
 public class InitPlayerPages {
 
+    /**
+     * Helper method to execute tasks asynchronously, matching InitAdminPages
+     * pattern
+     */
+    private static void runAsyncTask(Runnable task) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                task.run();
+            }
+        }.runTaskAsynchronously(plugin);
+    }
 
-    /* --------------------------------
-         * Initialization of the Player Shops Page
-         * Size: 27
-         * Slots for player shop buttons: 11 and 15
-        -------------------------------- */
+    /*
+     * --------------------------------
+     * Initialization of the Player Shops Page
+     * Size: 27
+     * Slots for player shop buttons: 11 and 15
+     * --------------------------------
+     */
     public static void createPlayerShopsPage() {
         new BukkitRunnable() {
             @Override
@@ -47,88 +60,85 @@ public class InitPlayerPages {
         }.runTaskAsynchronously(plugin);
     }
 
-
-    /* --------------------------------
+    /*
+     * --------------------------------
      * Initialization of the Player Shops
      * Size: 54
      * Slots for admin shops buttons: 0 to 45
      * Slots for navigation buttons: 46 and 53
      * Slot for back button: 49
-     *     * */
+     * *
+     */
     public static void createPlayerShopsList() {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                debugLog("Creating Player Shops Inventory");
-                final int ITEMS_PER_PAGE = 45;
-                List<YamlConfiguration> validShops = getAllPlayerShops();
+        runAsyncTask(() -> {
+            debugLog("Creating Player Shops Inventory");
+            List<YamlConfiguration> validShops = getAllPlayerShops();
+            int totalPages = (int) Math.ceil((double) validShops.size() / 45);
+            playerShopsList.clear();
+            playerShopsList = new ArrayList<>(totalPages);
 
-                int totalPages = (int) Math.ceil((double) validShops.size() / ITEMS_PER_PAGE);
-                playerShopsList.clear();
-                playerShopsList = new ArrayList<>(totalPages);
-
-                for (int page = 0; page < totalPages; page++) {
-                    VirtualInventoryOwner virtualOwner = new VirtualInventoryOwner("playerShopsList_" + page);
-                    Inventory pageInventory = createInventory(virtualOwner, 54,
-                            config.getString("messages.playerShops.title")
-                                    .replace("%page%", String.valueOf(page + 1)));
-
-                    // Add shop items
-                    int startIndex = page * ITEMS_PER_PAGE;
-                    int endIndex = Math.min((page + 1) * ITEMS_PER_PAGE, validShops.size());
-
-                    for (int i = startIndex; i < endIndex; i++) {
-                        YamlConfiguration shopConfig = validShops.get(i);
-
-
-                        ItemStack shopIcon = createPlayerShopIcon( shopConfig.getString("player"),
-                                UUID.fromString(shopConfig.getString("uuid")),
-                                shopConfig.getString("player"),
-                                shopConfig.getStringList("shopName")
-                        );
-
-                        pageInventory.setItem(i - startIndex, shopIcon);
-                    }
-
-
-                    // Add filler items in 45-53 slots
-                    for (int i = 45; i <= 53; i++) {
-                        pageInventory.setItem(i, playerFillerItem);
-                    }
-
-                    // Add navigation items
-                    ItemStack backButton = getIcon("messages.back",
-                            config.getString("heads.back"),
-                            "PLAYER_SHOPS_PAGE", null);
-                    backButton = setCurrentPage(backButton, "PLAYER_SHOPS_LIST");
-                    pageInventory.setItem(49, backButton);
-
-                    // Previous page button
-                    if (page > 0) {
-                        pageInventory.setItem(45, getIcon("messages.previousPage",
-                                config.getString("heads.previousPage"),
-                                page - 1,
-                                null));
-                    }
-
-                    // Next page button
-                    if (page < totalPages - 1) {
-                        pageInventory.setItem(53, getIcon("messages.nextPage",
-                                config.getString("heads.nextPage"),
-                                page + 1,
-                                null));
-                    }
-
-
-                    playerShopsList.add(pageInventory);
-                }
-
-                debugLog("Created " + totalPages + " pages of Player shops");
-
-                lastUpdateTime = System.currentTimeMillis();
-                debugLog(lastUpdateTime + " " + System.currentTimeMillis());
+            for (int page = 0; page < totalPages; page++) {
+                Inventory pageInventory = createPlayerShopPageInventory(page);
+                populatePlayerShopItems(pageInventory, validShops, page);
+                setupPlayerShopNavigation(pageInventory, page, totalPages);
+                playerShopsList.add(pageInventory);
             }
-        }.runTaskAsynchronously(plugin);
+
+            debugLog("Created " + totalPages + " pages of Player shops");
+            lastUpdateTime = System.currentTimeMillis();
+            debugLog(lastUpdateTime + " " + System.currentTimeMillis());
+        });
+    }
+
+    private static Inventory createPlayerShopPageInventory(int page) {
+        VirtualInventoryOwner virtualOwner = new VirtualInventoryOwner("playerShopsList_" + page);
+        return createInventory(virtualOwner, 54,
+                config.getString("messages.playerShops.title")
+                        .replace("%page%", String.valueOf(page + 1)));
+    }
+
+    private static void populatePlayerShopItems(Inventory inventory, List<YamlConfiguration> shops, int page) {
+        int startIndex = page * 45;
+        int endIndex = Math.min((page + 1) * 45, shops.size());
+
+        for (int i = startIndex; i < endIndex; i++) {
+            YamlConfiguration shopConfig = shops.get(i);
+            ItemStack shopIcon = createPlayerShopIcon(shopConfig.getString("player"),
+                    UUID.fromString(shopConfig.getString("uuid")),
+                    shopConfig.getString("player"),
+                    shopConfig.getStringList("shopName"));
+            inventory.setItem(i - startIndex, shopIcon);
+        }
+    }
+
+    private static void setupPlayerShopNavigation(Inventory inventory, int page, int totalPages) {
+        // Add filler items in 45-53 slots
+        for (int i = 45; i <= 53; i++) {
+            inventory.setItem(i, playerFillerItem);
+        }
+
+        // Add navigation items
+        ItemStack backButton = getIcon("messages.back",
+                config.getString("heads.back"),
+                "PLAYER_SHOPS_PAGE", null);
+        backButton = setCurrentPage(backButton, "PLAYER_SHOPS_LIST");
+        inventory.setItem(49, backButton);
+
+        // Previous page button
+        if (page > 0) {
+            inventory.setItem(45, getIcon("messages.previousPage",
+                    config.getString("heads.previousPage"),
+                    page - 1,
+                    null));
+        }
+
+        // Next page button
+        if (page < totalPages - 1) {
+            inventory.setItem(53, getIcon("messages.nextPage",
+                    config.getString("heads.nextPage"),
+                    page + 1,
+                    null));
+        }
     }
 
     private static List<YamlConfiguration> getAllPlayerShops() {
@@ -146,7 +156,6 @@ public class InitPlayerPages {
     }
 
     public static YamlConfiguration getPlayerShop(String uuid) {
-        YamlConfiguration shopFiles = new YamlConfiguration();
         File dir = new File(SHOPS_SAVEPATH);
         if (dir.exists() && dir.isDirectory()) {
             File shopFile = new File(dir, uuid + ".yml");
@@ -161,13 +170,14 @@ public class InitPlayerPages {
         return null;
     }
 
-
-    /* --------------------------------
+    /*
+     * --------------------------------
      * Initialization of the Player Items Shops
      * Size: 54
      * Slots for Player Items buttons: 0 to 45
      * Slots for navigation buttons: 45 and 53
-     *     * */
+     * *
+     */
     public static void createPlayerItemsList() {
         new BukkitRunnable() {
             @Override
@@ -232,7 +242,5 @@ public class InitPlayerPages {
             }
         }.runTaskAsynchronously(plugin);
     }
-
-
 
 }

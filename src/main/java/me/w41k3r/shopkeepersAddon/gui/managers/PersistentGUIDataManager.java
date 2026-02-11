@@ -8,21 +8,19 @@ import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.debugLog;
 import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.plugin;
 
 public class PersistentGUIDataManager {
-    // This class is intended to handle persistent data storage and retrieval.
-    // Currently, it does not contain any methods or fields.
-    // Future implementations may include:
-    // - Saving and loading player data
-    // - Managing shopkeeper states
-    // - Handling inventory persistence
+
+    private static final NamespacedKey TARGET_KEY = new NamespacedKey(plugin, "target");
+    private static final NamespacedKey CURRENT_PAGE_KEY = new NamespacedKey(plugin, "currentPage");
+    private static final NamespacedKey PAGE_NUMBER_KEY = new NamespacedKey(plugin, "pageNumber");
 
     public static String getTarget(ItemStack item) {
-        return item.getItemMeta().getPersistentDataContainer().get(new NamespacedKey(plugin, "target"), PersistentDataType.STRING);
+        return item.getItemMeta().getPersistentDataContainer().get(TARGET_KEY, PersistentDataType.STRING);
     }
 
     public static ItemStack setTarget(ItemStack item, String value) {
         debugLog("Setting target for item: " + item.getItemMeta().getDisplayName() + " to " + value);
         var meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "target"), PersistentDataType.STRING, value);
+        meta.getPersistentDataContainer().set(TARGET_KEY, PersistentDataType.STRING, value);
         item.setItemMeta(meta);
         return item;
     }
@@ -30,24 +28,25 @@ public class PersistentGUIDataManager {
     public static ItemStack setCurrentPage(ItemStack item, String value) {
         debugLog("Setting current page for item: " + item.getItemMeta().getDisplayName() + " to " + value);
         var meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "currentPage"), PersistentDataType.STRING, value);
+        meta.getPersistentDataContainer().set(CURRENT_PAGE_KEY, PersistentDataType.STRING, value);
         item.setItemMeta(meta);
         return item;
     }
+
     public static String getCurrentPage(ItemStack item) {
-        return item.getItemMeta().getPersistentDataContainer().get(new NamespacedKey(plugin, "currentPage"), PersistentDataType.STRING);
+        return item.getItemMeta().getPersistentDataContainer().get(CURRENT_PAGE_KEY, PersistentDataType.STRING);
     }
 
     public static Integer getPageNumber(ItemStack item) {
-        return item.getItemMeta().getPersistentDataContainer().get(new NamespacedKey(plugin, "pageNumber"), PersistentDataType.INTEGER);
+        return item.getItemMeta().getPersistentDataContainer().get(PAGE_NUMBER_KEY, PersistentDataType.INTEGER);
     }
+
     public static ItemStack setPageNumber(ItemStack item, Integer value) {
         debugLog("Setting page number for item: " + item.getItemMeta().getDisplayName() + " to " + value);
         var meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "pageNumber"), PersistentDataType.INTEGER, value);
+        meta.getPersistentDataContainer().set(PAGE_NUMBER_KEY, PersistentDataType.INTEGER, value);
         item.setItemMeta(meta);
         return item;
     }
-
 
 }

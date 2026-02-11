@@ -4,7 +4,7 @@
     <groupId>me.w41k3r</groupId>
     <artifactId>ShopkeepersAddon</artifactId>
     <name>ShopkeepersAddon</name>
-    <version>2.23.10.2</version>
+    <version>${shopkeepers.version}</version>
     <build>
         <resources>
             <resource>
@@ -79,7 +79,7 @@
                         </goals>
                         <configuration>
                             <classifier>${project.version}-${module.build.timestamp}</classifier>
-                            <outputDirectory>A:\Test\plugins</outputDirectory>
+                            <outputDirectory>.\TestServer\plugins</outputDirectory>
                             <finalName>ShopkeepersAddon</finalName>
                         </configuration>
                     </execution>
@@ -90,7 +90,7 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <classifier>v${project.version}</classifier>
+                            <classifier>${project.version}-${module.build.timestamp}</classifier>
                             <outputDirectory>${project.basedir}\build</outputDirectory>
                             <finalName>ShopkeepersAddon</finalName>
                         </configuration>
@@ -143,23 +143,25 @@
         <dependency>
             <groupId>com.github.Shopkeepers</groupId>
             <artifactId>Shopkeepers</artifactId>
-            <version>v2.23.8</version>
+            <version>v${shopkeepers.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>com.github.MilkBowl</groupId>
-            <artifactId>VaultAPI</artifactId>
-            <version>1.7</version>
-            <scope>provided</scope>
-        </dependency>
+
         <dependency>
             <groupId>com.comphenix.protocol</groupId>
             <artifactId>ProtocolLib</artifactId>
             <version>5.3.0</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.17.1</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
     <properties>
+        <shopkeepers.version>2.25.0</shopkeepers.version>
         <java.version>21</java.version>
         <maven.build.timestamp.format>yyMMdd</maven.build.timestamp.format>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

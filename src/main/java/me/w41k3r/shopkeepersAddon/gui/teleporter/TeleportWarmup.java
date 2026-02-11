@@ -18,14 +18,6 @@ import java.util.UUID;
 import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.*;
 
 public class TeleportWarmup implements Listener {
-    // This class is intended to handle teleportation warmup functionalities.
-    // Currently, it does not contain any methods or fields.
-    // Future implementations may include:
-    // - Managing teleportation warmup timers
-    // - Handling player confirmations for teleportation
-    // - Integrating with the Teleporter class for actual teleportation
-
-    // Note: This class is currently empty and serves as a placeholder for future development.
 
     private final Player player;
     private final Location initialLocation;
@@ -41,9 +33,10 @@ public class TeleportWarmup implements Listener {
     private BukkitTask warmupTask;
     private final String errorMessage;
 
-    public TeleportWarmup(Player player, Location initialLocation, Location teleportLocation, String cancelMessage,                          String successMessage, String errorMessage,boolean allowMovement,
-                          int warmupTime,
-                          Plugin plugin, boolean isAdminShop, UUID shopkeeperUUID) {
+    public TeleportWarmup(Player player, Location initialLocation, Location teleportLocation, String cancelMessage,
+            String successMessage, String errorMessage, boolean allowMovement,
+            int warmupTime,
+            Plugin plugin, boolean isAdminShop, UUID shopkeeperUUID) {
         this.player = player;
         this.initialLocation = initialLocation;
         this.teleportLocation = teleportLocation;
@@ -57,7 +50,6 @@ public class TeleportWarmup implements Listener {
         this.countdown = warmupTime; // Set countdown to warmup time
         this.shopkeeperUUID = shopkeeperUUID;
     }
-
 
     public void startWarmup() {
         // Register PlayerMoveEvent listener if movement isn't allowed
@@ -77,7 +69,9 @@ public class TeleportWarmup implements Listener {
 
                 // Update title and chat message with countdown
                 player.sendTitle(config.getString("messages.adminShops.teleport.title"),
-                        config.getString("messages.adminShops.teleport.subtitle").replace("%time%", String.valueOf(countdown)), 0, 20,
+                        config.getString("messages.adminShops.teleport.subtitle").replace("%time%",
+                                String.valueOf(countdown)),
+                        0, 20,
                         0);
                 countdown--; // Decrement countdown
             }
@@ -90,14 +84,15 @@ public class TeleportWarmup implements Listener {
         debugLog("Starting teleportation for player: " + player.getName());
         if (isAdminShop) {
             debugLog("Teleporting player to admin shop: " + shopkeeperUUID);
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "shopkeeper teleport " + shopkeeperUUID + " " + player.getName());
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
+                    "shopkeeper teleport " + shopkeeperUUID + " " + player.getName());
         } else {
             debugLog("Teleporting player to player shop");
             finalLocation = teleportLocation;
             player.teleport(finalLocation);
         }
 
-        sendPlayerMessage(player,successMessage);
+        sendPlayerMessage(player, successMessage);
         player.resetTitle();
     }
 
@@ -111,7 +106,8 @@ public class TeleportWarmup implements Listener {
         double deltaZ = blockLocation.getZ() - playerLocation.getZ();
 
         float yaw = (float) Math.toDegrees(Math.atan2(deltaZ, deltaX)) - 90;
-        if (yaw < 0) yaw += 360;
+        if (yaw < 0)
+            yaw += 360;
 
         double horizontalDistance = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
         float pitch = (float) -Math.toDegrees(Math.atan2(deltaY, horizontalDistance));
@@ -124,13 +120,13 @@ public class TeleportWarmup implements Listener {
         player.teleport(playerLocation);
     }
 
-
     private Location getSafeLocationNearby(Location location) {
         World world = location.getWorld();
-        if (world == null) return location;
+        if (world == null)
+            return location;
 
-        int[] cardinalDistances = {3, 2, 1};
-        double[] diagonalOffsets = {2.0, -2.0};
+        int[] cardinalDistances = { 3, 2, 1 };
+        double[] diagonalOffsets = { 2.0, -2.0 };
         for (int distance : cardinalDistances) {
             // North
             Location northLocation = location.clone().add(0, 0, -distance).add(0.5, 0, 0.5); // Center of block
@@ -162,7 +158,8 @@ public class TeleportWarmup implements Listener {
             for (double offsetZ : diagonalOffsets) {
                 // Avoid checking the origin
                 if (offsetX != 0 && offsetZ != 0) {
-                    Location diagonalLocation = location.clone().add(offsetX, 0, offsetZ).add(0.5, 0, 0.5); // Center of block
+                    Location diagonalLocation = location.clone().add(offsetX, 0, offsetZ).add(0.5, 0, 0.5); // Center of
+                                                                                                            // block
                     if (isSafeLocation(diagonalLocation)) {
                         return diagonalLocation;
                     }
@@ -173,15 +170,11 @@ public class TeleportWarmup implements Listener {
         return location; // Fallback if no safe block found
     }
 
-
     // Helper method to determine if a location is safe
     private boolean isSafeLocation(Location location) {
         Block block = location.getBlock();
         return block.getType() == Material.AIR && block.getRelative(0, -1, 0).getType().isSolid();
     }
-
-
-
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
@@ -208,7 +201,7 @@ public class TeleportWarmup implements Listener {
         }
 
         // Send cancel message to the player
-        sendPlayerMessage(player,cancelMessage);
+        sendPlayerMessage(player, cancelMessage);
         player.resetTitle();
     }
 }

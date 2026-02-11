@@ -19,11 +19,11 @@ import static me.w41k3r.shopkeepersAddon.gui.models.Variables.lastUpdateTime;
 public class UpdateListeners implements Listener {
 
     @EventHandler
-    public void onShopEdit(ShopkeeperEditedEvent event){
+    public void onShopEdit(ShopkeeperEditedEvent event) {
         updateShops(event.getShopkeeper());
     }
 
-    public static void updateShops(@Nullable Shopkeeper shopkeeper){
+    public static void updateShops(@Nullable Shopkeeper shopkeeper) {
 
         debugLog(ChatColor.YELLOW + "Updating shops... " + lastUpdateTime);
         if (lastUpdateTime > System.currentTimeMillis() - 7000) {
@@ -35,7 +35,7 @@ public class UpdateListeners implements Listener {
             debugLog("Players Shops list refreshed!!");
             return;
         }
-        if(shopkeeper instanceof PlayerShopkeeper) {
+        if (shopkeeper instanceof PlayerShopkeeper) {
             createPlayerItemsList();
             debugLog("Players Items list refreshed!!");
             return;
@@ -44,6 +44,4 @@ public class UpdateListeners implements Listener {
         createAdminItemsList();
         debugLog("Admin Shops refreshed!!");
     }
-
-
 }

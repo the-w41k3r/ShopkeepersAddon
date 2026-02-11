@@ -1,0 +1,155 @@
+welcome:
+  Enabled: true
+  Label: '{#white}Welcome {#gray}%cmi_user_display_name% {#white}to {#edward}%cmi_user_world_formatted%'
+  Description:
+    Width: 300
+    Lines: 
+    - '{#green}Best minecraft server on earth!'
+    - ''
+    - '{#white}We are glad to have you here %cmi_user_display_name%{#white}!'
+    - 'If you have any questions, feel free to ask our staff'
+  VisualFields:
+  - Width: 300
+    Lines: 
+    - '{#brown}Extra info line!'
+  Buttons:
+    Columns: 3 
+    List:
+    - Label: '{#red}Read The Rules' 
+      Width: 100
+      OpenDialog: license
+      Tooltip: 
+      - '{#red}Read it before starting to play!'
+    - Label: '{#green>}Read a joke{#darkgreen<}'
+      Width: 100
+      OpenDialog: 'randomtext'
+    - Label: '{#edward>}Start Playing{#darkgreen<}'
+      Width: 100
+      Commands: 
+      - closeinv!
+    - Label: '{#blue}Select a thing'
+      Width: 100
+      OpenDialog: inputexample
+    - Label: ''
+      Width: 1
+    - Label: '{#yellow}Visual examples'
+      Width: 100
+      OpenDialog: visualexample
+    - Label: '{#yellow}Visit Our Website %cmi_user_display_name%'
+      Width: 304
+      Url: www.zrips.net
+  Close:
+    Label: '{#pink>}Go Away!{#edward<}'
+    Tooltip: 
+    - '{#pink>}Lets go %cmi_user_display_name%!{#edward<}'
+    Commands: 
+    - 'cmi feed [playerName]'
+    Width: 150
+visualexample:
+  Enabled: true
+  Label: '{#white}Visual examples'
+  Description:
+    Width: 300
+    Lines: 
+    - '{#green}Descrption at the top!'
+  VisualFields:
+  - Width: 300
+    Lines: 
+    - '{#brown}Extra info line!'
+  - Item: Stone;n{{#red}Custom name};e{sharpness:2}
+    Text:
+      Width: 150
+      Lines: 
+      - '{#green}Item text with some auto wrapping and'
+      - ''
+      - '{#white}Multiline'
+    Width: 16
+    Height: 16
+    ShowTooltip: true
+    ShowDecorations: false
+  - Item: potato
+    Text:
+      Width: 150
+      Lines: 
+      - '{#green}No tooltip on item'
+    Width: 16
+    Height: 16
+    ShowTooltip: false
+  - Item: '[ItemInHand]'
+    Text:
+      Lines: 
+      - '{#green}%cmi_iteminhand_displayname% {#white}is what you are holding in your hand!'
+  Close:
+    Label: '{#edward}Go Back!'
+    OpenDialog: welcome
+    Width: 250
+inputexample:
+  Enabled: true
+  Label: '{#white}Example of inputs'
+  Inputs:
+  - Label: '{#brown}Pick one'
+    Width: 150
+    Options:
+    - Label: Option A
+      OpenDialog: 'randomtext'
+    - Label: '{#red}Option B'
+      Default: true
+      Commands:
+      - 'cmi heal [playerName]'
+    - Label: Option C
+  - Label: 'Select it and get healed on save!'
+    OnTrue: 
+      Commands:
+      - cmi heal [playerName]
+    OnFalse: 
+      Commands:
+      - msg! [playerName] No free heal for you!
+  Buttons:
+    Columns: 1 
+    List:
+    - Label: '{#yellow}Save'
+      Width: 150
+      Save: true
+  Close:
+    Label: '{#pink}Back'
+    OpenDialog: welcome
+license:
+  Enabled: true
+  Label: '{#white}User Agreement'
+  VisualFields:
+  - Width: 350
+    Lines: 
+    - 'By clicking “Agree with terms” or continuing to play on this server, you solemnly swear that:'
+    - ''
+    - ''
+    - ''
+    - '{#white}1. You will not grief, steal, or blow up someone’s house unless they literally begged you to. (And even then, record it for legal reasons.)'
+    - '{#nobel}2. You will not hack, fly, X-ray, or teleport through walls like a haunted AI. We like our ghosts dead and our walls solid.'
+    - '{#white}3. You agree that admins are always right, especially when they’re wrong. Disputes may be settled in a pit of lava.'
+    - '{#nobel}4. You will not spam the chat, unless it’s with memes approved by the Ministry of Silly Blocks™.'
+    - '{#white}5. You will build things, not just holes in the ground shaped like something inappropriate.'
+    - '{#nobel}6. You will not summon the Wither inside spawn. Seriously. That’s a one-way ticket to banville.'
+    - "{#white}7. You accept that lag may happen, creepers may explode, and your pet dog may randomly vanish. It’s Minecraft, not therapy."
+    - "{#nobel}8. You promise not to ask for op, creative mode, free diamonds, or the admin’s credit card number."
+    - '{#white}9. You accept that this is a game, not a substitute for real-world dominance, revenge, or romance.'
+    - "{#nobel}10. You acknowledge that your building may be roasted — gently and with love — if it's a dirt cube."
+    - ''
+    - ''
+    - '{#white}By accepting, you agree to play nice, have fun, and not become the reason we disable TNT again.'
+    - ''
+    - '{#yellow}Click to enter blocky paradise.'
+    - 'Missclick to be gently kicked like a misbehaving parrot.'
+  Inputs:
+  - Type: Boolean
+    Label: 'Agree with terms'
+    OnTrue: 
+      Commands:
+      - asConsole! cmi heal [playerName]
+      - closeinv!
+    OnFalse:
+      Commands:
+      - asConsole! cmi kick [playerName] You disagreed! 
+  Close:
+    Label: 'Update!'
+    Save: true
+    Width: 150
