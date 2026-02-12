@@ -14,7 +14,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import me.w41k3r.shopkeepersAddon.ShopkeepersAddon;
 import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.config;
 import static me.w41k3r.shopkeepersAddon.ShopkeepersAddon.debugLog;
 import static me.w41k3r.shopkeepersAddon.economy.PersistantDataManager.setPrice;
@@ -264,256 +263,53 @@ public class EconomyManager {
                 symbolBefore ? "before" : "after");
     }
 
-    // ========== UNIVERSAL ECONOMY INTEGRATION ==========
-
-    private static final String COMMANDS_PATH = ECONOMY_CONFIG_PATH + "commands.";
-
-    // Cache for balance checks to prevent spamming console commands (50ms TTL)
-    private static final java.util.Map<String, Long> balanceCacheTime = new java.util.concurrent.ConcurrentHashMap<>();
-    private static final java.util.Map<String, Double> balanceCacheValue = new java.util.concurrent.ConcurrentHashMap<>();
-    private static final long CACHE_TTL_MS = 50;
+    // ========== VAULT ECONOMY INTEGRATION ==========
 
     /**
-     * Get player balance using universal command-based system.
+     * Get player balance using Vault.
      *
      * @param playerName the player name
-     * @return the player's balance, or 0.0 if unable to parse
+     * @return the player's balance, or 0.0 if economy invalid
      */
     public static double getBalance(String playerName) {
-        // Check cache first
-        if (balanceCacheTime.containsKey(playerName)) {
-            long lastTime = balanceCacheTime.get(playerName);
-            if (System.currentTimeMillis() - lastTime < CACHE_TTL_MS) {
-                return balanceCacheValue.get(playerName);
-            }
-        }
-
-        try {
-            // Get balance check command from config
-            String command = config.getString(COMMANDS_PATH + "balance-check.command", "bal {player}");
-            command = command.replace("{player}", playerName);
-
-            // Create console capture and execute command
-            ConsoleCapture capture = new ConsoleCapture();
-            capture.startLogCapture();
-            try {
-                Bukkit.dispatchCommand(capture, command);
-                
-                // Wait for output (max 200ms) if empty
-                long start = System.currentTimeMillis();
-                while (capture.getCapturedOutput().isEmpty() && System.currentTimeMillis() - start < 1000) {
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                }
-            } finally {
-                capture.stopLogCapture();
-            }
-
-            // Get captured output
-            List<String> output = capture.getCapturedOutput();
-            if (output.isEmpty()) {
-                debugLog("No output captured from balance check command: " + command);
-                return 0.0;
-            }
-            
-            if (ShopkeepersAddon.debugMode) {
-                debugLog("Captured Output for '" + command + "':");
-                for (String line : output) {
-                    debugLog(" > " + line);
-                }
-            }
-
-            // Parse based on mode
-            boolean strictMode = config.getBoolean(COMMANDS_PATH + "balance-check.strict-mode", false);
-            double balance;
-
-            if (strictMode) {
-                String regexPattern = config.getString(COMMANDS_PATH + "balance-check.regex-pattern", "Balance: ([\\d,.]+)");
-                balance = parseBalanceStrict(output, regexPattern);
-            } else {
-                balance = parseBalanceHeuristic(output);
-            }
-
-            debugLog("Parsed balance for " + playerName + ": " + formatPrice(balance));
-            
-            // Update cache
-            balanceCacheTime.put(playerName, System.currentTimeMillis());
-            balanceCacheValue.put(playerName, balance);
-            
-            return balance;
-
-        } catch (Exception e) {
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to get balance for " + playerName, e);
+        if (me.w41k3r.shopkeepersAddon.ShopkeepersAddon.getEconomy() == null) {
             return 0.0;
         }
+        
+        org.bukkit.OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
+        return me.w41k3r.shopkeepersAddon.ShopkeepersAddon.getEconomy().getBalance(player);
     }
 
     /**
-     * Give money to a player using configured commands.
+     * Give money to a player using Vault.
      *
      * @param playerName the player name
      * @param amount     the amount to give
      */
     public static void giveMoney(String playerName, double amount) {
-        try {
-            List<String> commands = config.getStringList(COMMANDS_PATH + "give-money");
-            if (commands.isEmpty()) {
-                debugLog("No give-money commands configured");
-                return;
-            }
-
-            String formattedAmount = String.format(Locale.US, "%.2f", amount);
-
-            for (String command : commands) {
-                command = command.replace("{player}", playerName);
-                command = command.replace("{price}", formattedAmount);
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
-                debugLog("Executed give-money command: " + command);
-            }
-
-        } catch (Exception e) {
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to give money to " + playerName, e);
+        if (me.w41k3r.shopkeepersAddon.ShopkeepersAddon.getEconomy() == null) {
+            return;
         }
+
+        org.bukkit.OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
+        me.w41k3r.shopkeepersAddon.ShopkeepersAddon.getEconomy().depositPlayer(player, amount);
+        debugLog("Deposited " + formatPrice(amount) + " into " + playerName + "'s account (Vault)");
     }
 
     /**
-     * Take money from a player using configured commands.
+     * Take money from a player using Vault.
      *
      * @param playerName the player name
      * @param amount     the amount to take
      */
     public static void takeMoney(String playerName, double amount) {
-        try {
-            List<String> commands = config.getStringList(COMMANDS_PATH + "take-money");
-            if (commands.isEmpty()) {
-                debugLog("No take-money commands configured");
-                return;
-            }
-
-            String formattedAmount = String.format(Locale.US, "%.2f", amount);
-
-            for (String command : commands) {
-                command = command.replace("{player}", playerName);
-                command = command.replace("{price}", formattedAmount);
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
-                debugLog("Executed take-money command: " + command);
-            }
-
-        } catch (Exception e) {
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to take money from " + playerName, e);
+        if (me.w41k3r.shopkeepersAddon.ShopkeepersAddon.getEconomy() == null) {
+            return;
         }
-    }
 
-    /**
-     * Parse balance using strict regex mode.
-     *
-     * @param output       the captured command output
-     * @param regexPattern the regex pattern with one capturing group
-     * @return the parsed balance, or 0.0 if not found
-     */
-    private static double parseBalanceStrict(List<String> output, String regexPattern) {
-        try {
-            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regexPattern);
-
-            for (String line : output) {
-                java.util.regex.Matcher matcher = pattern.matcher(line);
-                if (matcher.find() && matcher.groupCount() >= 1) {
-                    String balanceStr = matcher.group(1);
-                    // Remove commas and parse
-                    balanceStr = balanceStr.replace(",", "");
-                    return Double.parseDouble(balanceStr);
-                }
-            }
-
-            debugLog("Strict regex pattern did not match any output line");
-            return 0.0;
-
-        } catch (Exception e) {
-            Bukkit.getLogger().log(Level.WARNING, "Failed to parse balance in strict mode", e);
-            return 0.0;
-        }
-    }
-
-    /**
-     * Parse balance using heuristic auto-detection mode.
-     * Looks for numbers in the output, prioritizing those at the end of lines.
-     *
-     * @param output the captured command output
-     * @return the parsed balance, or 0.0 if not found
-     */
-    private static double parseBalanceHeuristic(List<String> output) {
-        try {
-            // Iterate lines BACKWARDS (newest first)
-            for (int j = output.size() - 1; j >= 0; j--) {
-                String line = output.get(j);
-                
-                // Strip ANSI codes first
-                line = line.replaceAll("\u001B\\[[;\\d]*m", "");
-                
-                // Strip color codes
-                line = org.bukkit.ChatColor.stripColor(line);
-                if (line == null || line.trim().isEmpty()) {
-                    continue;
-                }
-
-                // Split by whitespace first to preserve token structure
-                String[] words = line.split("\\s+");
-
-                // Iterate backwards (balance is usually at the end)
-                for (int i = words.length - 1; i >= 0; i--) {
-                    String word = words[i];
-                    
-                    // 1. Remove common currency symbols and non-numeric chars from edges
-                    // We keep digits, dots, and commas. We also remove brackets/parentheses often found in logs.
-                    String cleaned = word.replaceAll("[^\\d.,a-zA-Z]", "");
-                    
-                    // 2. If the remaining word contains ANY letters, it is likely not a balance 
-                    // (e.g. "USD", "EUR", "Coins" or a username like "_w41k3r" which became "w41k3r")
-                    // We want to avoid parsing "100Coins" as "100" if it risks parsing "Player1" as "1".
-                    // The safest heuristic is: MUST be purely numeric (with dots/commas).
-                    if (cleaned.matches(".*[a-zA-Z].*")) {
-                        continue;
-                    }
-                    
-                    // 3. Now strip everything that isn't a digit, dot, or comma to handle things like "$100.00" -> "100.00"
-                    cleaned = cleaned.replaceAll("[^\\d.,]", "");
-
-                    if (cleaned.isEmpty()) {
-                        continue;
-                    }
-
-                    try {
-                        // Remove commas for parsing
-                        String parseable = cleaned.replace(",", "");
-                        
-                        // Check if it's a valid number
-                        // Handle cases like "." or "," which might remain
-                        if (!parseable.matches(".*\\d.*")) {
-                            continue;
-                        }
-
-                        double value = Double.parseDouble(parseable);
-                        // Sanity check: balance should be non-negative
-                        if (value >= 0) {
-                            debugLog("Found valid balance: " + value + " (Source token: '" + word + "')");
-                            return value;
-                        }
-                    } catch (NumberFormatException ignored) {
-                        // Continue to next word
-                    }
-                }
-            }
-
-            debugLog("Heuristic parser could not find a valid balance in output");
-            return 0.0;
-        } catch (Exception e) {
-            Bukkit.getLogger().log(Level.WARNING, "Failed to parse balance in heuristic mode", e);
-            return 0.0;
-        }
+        org.bukkit.OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
+        me.w41k3r.shopkeepersAddon.ShopkeepersAddon.getEconomy().withdrawPlayer(player, amount);
+        debugLog("Withdrew " + formatPrice(amount) + " from " + playerName + "'s account (Vault)");
     }
 
     /**
@@ -525,39 +321,5 @@ public class EconomyManager {
         return config.getBoolean(ECONOMY_CONFIG_PATH + "enabled", false);
     }
 
-    /**
-     * Check if balance checking is required for buy transactions.
-     *
-     * @return true if balance should be checked before buying
-     */
-    public static boolean isBalanceCheckRequired() {
-        return config.getBoolean(ECONOMY_CONFIG_PATH + "buy-settings.require-balance-check", true);
-    }
 
-    /**
-     * Check if cost is disabled for buy transactions.
-     *
-     * @return true if items should be free
-     */
-    public static boolean isBuyFree() {
-        return config.getBoolean(ECONOMY_CONFIG_PATH + "buy-settings.disable-cost", false);
-    }
-
-    /**
-     * Check if payouts are disabled for sell transactions.
-     *
-     * @return true if no money should be given
-     */
-    public static boolean isSellFree() {
-        return config.getBoolean(ECONOMY_CONFIG_PATH + "sell-settings.disable-payout", false);
-    }
-
-    /**
-     * Check if owner balance checking is required for sell transactions.
-     *
-     * @return true if owner balance should be checked before selling
-     */
-    public static boolean isOwnerBalanceCheckRequired() {
-        return config.getBoolean(ECONOMY_CONFIG_PATH + "sell-settings.require-owner-balance-check", true);
-    }
 }

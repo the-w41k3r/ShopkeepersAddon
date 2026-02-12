@@ -1,4 +1,20 @@
-# Changelog 2.25.0.1-260211
+# Changelog 2.25.0-260212
+
+## 🚀 Vault Economy Migration
+- **Native Vault Integration**: Replaced the entire command-based economy system with direct Vault API calls.
+- **Soft Dependency**: Vault is now a soft dependency. If missing, economy features are gracefully disabled.
+- **Performance**: Removed the overhead of parsing console commands for every balance check.
+
+## 🛡️ Enhanced Trade Handling
+- **Post-Trade Balance Check**: Implemented logic to re-evaluate affordability immediately after a shift-click trade.
+- **Slot Invalidation**: If a player (or shop owner) runs out of funds during a bulk trade, the trade slot is automatically cleared or not replenished to prevent invalid transactions.
+
+## 🧹 Configuration Cleanup
+- **Simplified Config**: Removed `economy.commands`, `economy.balance-placeholder`, `buy-settings`, and `sell-settings`.
+- **Enforced Defaults**: Balance checks and costs/payouts are now always enabled by default in the code.
+- **Config Version 1.3**: Bumped `config-version` to 1.3 to ensure proper migration.
+
+# Changelog 2.25.0-260211
 
 ## 🚀 Universal Economy Integration
 - **Command-Based Economy**: Implemented a universal economy system that works with *any* economy plugin (Essentials, CMI, Vault, etc.) by executing console commands and parsing output.

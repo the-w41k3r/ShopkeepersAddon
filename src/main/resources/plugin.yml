@@ -5,7 +5,7 @@ api-version: '1.21'
 authors: [ _w41k3r ]
 description: Add economy and navigation to Shopkeepers plugin.
 depend: [Shopkeepers, ProtocolLib]
-softdepend: [Essentials, CMI, Vault]
+softdepend: [Shopkeepers, SkinsRestorer, PlaceholderAPI, Vault]
 
 commands:
   shopkeepersaddon:

@@ -36,7 +36,7 @@ public final class ShopkeepersAddon extends JavaPlugin {
     private static final String CONFIG_BLACKLIST_PATH = "playerShops.itemBlacklist";
     private static final String BACKUP_FOLDER_NAME = "backups";
     private static final String CONFIG_VERSION_PATH = "config-version";
-    private static final double CURRENT_CONFIG_VERSION = 1.1;
+    private static final double CURRENT_CONFIG_VERSION = 1.3;
 
     public static FileConfiguration config;
     public static ShopkeepersAddon plugin;
@@ -44,6 +44,7 @@ public final class ShopkeepersAddon extends JavaPlugin {
     public static boolean debugMode;
     public static ItemStack adminFillerItem;
     public static ItemStack playerFillerItem;
+    public static net.milkbowl.vault.economy.Economy econ = null;
 
     private static String prefix;
 
@@ -87,6 +88,20 @@ public final class ShopkeepersAddon extends JavaPlugin {
             logger.warning("Player skins may not work correctly.");
         }
 
+        // Check for PlaceholderAPI
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null) {
+            // Only warn if economy is enabled, or warn regardless but don't disable
+            if (config.getBoolean(CONFIG_ECONOMY_ENABLED_PATH, true)) {
+                 logger.severe("PlaceholderAPI is not installed! Economy features will not work correctly.");
+                 logger.severe("Download it here: https://www.spigotmc.org/resources/placeholderapi.6245/");
+                 logger.severe("Steps to set up:");
+                 logger.severe("1. Install PlaceholderAPI and restart the server.");
+                 logger.severe("2. Run the expansion download command for your economy plugin.");
+                 logger.severe("   Example for Vault: /papi ecloud download Vault");
+                 logger.severe("   Then run: /papi reload");
+            }
+        }
+
         return true;
     }
 
@@ -96,8 +111,22 @@ public final class ShopkeepersAddon extends JavaPlugin {
             return;
         }
 
-        // setupVault(); -> Removed
-        debugLog("Economy system initialized (Universal Command-Based)");
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            logger.warning("Vault not found! Economy features disabled.");
+            return;
+        }
+
+        org.bukkit.plugin.RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> rsp = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+        if (rsp == null) {
+            logger.warning("No economy plugin found (via Vault)! Economy features disabled.");
+            return;
+        }
+        econ = rsp.getProvider();
+        logger.info("Vault Economy hooked: " + econ.getName());
+    }
+
+    public static net.milkbowl.vault.economy.Economy getEconomy() {
+        return econ;
     }
 
     private void initializeComponents() {
@@ -155,6 +184,9 @@ public final class ShopkeepersAddon extends JavaPlugin {
                         new InputStreamReader(defaultConfigStream));
 
                 boolean configChanged = addMissingKeysSimple(config, defaultConfig);
+                if (removeUnusedKeys(config, defaultConfig)) {
+                    configChanged = true;
+                }
 
                 config.set(CONFIG_VERSION_PATH, CURRENT_CONFIG_VERSION);
 
@@ -263,6 +295,26 @@ public final class ShopkeepersAddon extends JavaPlugin {
             }
         }
 
+        return changed;
+    }
+
+    private static boolean removeUnusedKeys(FileConfiguration currentConfig, FileConfiguration defaultConfig) {
+        boolean changed = false;
+        // Collect keys to remove to avoid ConcurrentModificationException
+        List<String> keysToRemove = new ArrayList<>();
+        
+        for (String key : currentConfig.getKeys(true)) {
+            if (!defaultConfig.contains(key)) {
+                keysToRemove.add(key);
+            }
+        }
+        
+        for (String key : keysToRemove) {
+             currentConfig.set(key, null);
+             changed = true;
+             logger.info("Removed unused config key: " + key);
+        }
+        
         return changed;
     }
 

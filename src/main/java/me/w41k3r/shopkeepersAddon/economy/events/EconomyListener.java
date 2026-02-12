@@ -94,7 +94,7 @@ public class EconomyListener implements Listener {
              Shopkeeper shopkeeper = ShopkeepersAPI.getUIRegistry().getUISession(player).getShopkeeper();
              if (shopkeeper instanceof PlayerShopkeeper) {
                  double price = getPrice(recipe.getResult());
-                 if (EconomyManager.isOwnerBalanceCheckRequired() && getOwnerMoney(shopkeeper) < price) {
+                 if (getOwnerMoney(shopkeeper) < price) {
                      sendPlayerMessage(player, config.getString("messages.noMoneyOwner", "The shop owner doesn't have enough money!"));
                      event.setCancelled(true);
                      return;
@@ -118,10 +118,13 @@ public class EconomyListener implements Listener {
         Shopkeeper shopkeeper = event.getShopkeeper();
 
         if (event.getClickEvent().isShiftClick()) {
-            event.setCancelled(true);
-            processBulkTrade(player, shopkeeper, recipe,
-                    event.getClickEvent().getClickedInventory().getItem(0).getAmount());
-            return;
+            // Only process bulk trade if it is an economy trade (Buying)
+            if (isEconomyItem(recipe.getItem1().copy())) {
+                event.setCancelled(true);
+                processBulkTrade(player, shopkeeper, recipe,
+                        event.getClickEvent().getClickedInventory().getItem(0).getAmount());
+                return;
+            }
         }
 
         if (isEconomyItem(recipe.getItem1().copy())) {
@@ -133,7 +136,7 @@ public class EconomyListener implements Listener {
                    // Refresh trade slots? We need context if we are still in UI
                    if (ShopkeepersAPI.getUIRegistry().getUISession(player) != null) {
                        // We can't easily trigger TradeSelectEvent, but we can simulate the "put back" logic
-                        updateTradeSlotsPostTrade(player, recipe);
+                        updateTradeSlotsPostTrade(player, recipe, shopkeeper);
                    }
                 }, 1L);
             }
@@ -143,20 +146,12 @@ public class EconomyListener implements Listener {
     private boolean processEconomyTrade(Player player, Shopkeeper shopkeeper, TradingRecipe recipe) {
         double price = getPrice(recipe.getItem1().copy());
         
-        // Check if universal economy is enabled
-        boolean costDisabled = EconomyManager.isBuyFree();
-        boolean balanceCheckRequired = EconomyManager.isBalanceCheckRequired();
-
-        if (balanceCheckRequired && !costDisabled) {
-             if (!hasMoney(player, price)) {
-                 sendPlayerMessage(player, config.getString("messages.noMoney", "You don't have enough money!"));
-                 return false;
-             }
+        if (!hasMoney(player, price)) {
+             sendPlayerMessage(player, config.getString("messages.noMoney", "You don't have enough money!"));
+             return false;
         }
         
-        if (!costDisabled) {
-             EconomyManager.takeMoney(player.getName(), price);
-        }
+        EconomyManager.takeMoney(player.getName(), price);
 
         if (!(shopkeeper instanceof AdminShopkeeper)) {
             depositToShopOwner(shopkeeper, price);
@@ -170,18 +165,23 @@ public class EconomyListener implements Listener {
         return true;
     }
 
-    private void updateTradeSlotsPostTrade(Player player, TradingRecipe recipe) {
+    private void updateTradeSlotsPostTrade(Player player, TradingRecipe recipe, Shopkeeper shopkeeper) {
          // Logic to refill slot 0 with money item if affordable
          Inventory inv = player.getOpenInventory().getTopInventory();
-         if (inv instanceof MerchantInventory merchantInv) {
+         if (inv instanceof MerchantInventory) {
              ItemStack firstIngredient = recipe.getItem1().copy();
+             
+             // Case 1: Buying (Input is Money)
              if (isEconomyItem(firstIngredient)) {
                  double price = getPrice(firstIngredient);
                  
-                 // Fix: Fetch balance ONCE instead of inside the loop
-                 // This prevents running 64 console commands in a single tick
                  double balance = EconomyManager.getBalance(player.getName());
                  
+                 if (balance < price) {
+                     inv.setItem(0, null); // Clear slot if cannot afford even one
+                     return;
+                 }
+
                  // Determine max affordable stack locally
                  int maxStack = 64;
                  
@@ -199,25 +199,30 @@ public class EconomyListener implements Listener {
                      inv.setItem(0, null);
                  }
              }
+             // Case 2: Selling (Result is Money) - Check if Owner can afford to buy more
+             else if (isEconomyItem(recipe.getResultItem().copy())) {
+                  if (shopkeeper instanceof PlayerShopkeeper) {
+                      double price = getPrice(recipe.getResultItem().copy());
+                      double ownerMoney = getOwnerMoney(shopkeeper);
+                      
+                      if (ownerMoney < price) {
+                          inv.setItem(0, null); // Clear input slot to prevent further sales
+                      }
+                  }
+             }
          }
     }
 
     private void processBulkTrade(Player player, Shopkeeper shopkeeper, TradingRecipe recipe, int tradeCount) {
         double pricePerTrade = getPrice(recipe.getItem1().copy());
         double totalPrice = pricePerTrade * tradeCount;
-        boolean costDisabled = EconomyManager.isBuyFree();
-        boolean balanceCheckRequired = EconomyManager.isBalanceCheckRequired();
 
-        if (balanceCheckRequired && !costDisabled) {
-            if (!hasMoney(player, totalPrice)) {
-                sendPlayerMessage(player, config.getString("messages.noMoney", "You don't have enough money!"));
-                return;
-            }
+        if (!hasMoney(player, totalPrice)) {
+            sendPlayerMessage(player, config.getString("messages.noMoney", "You don't have enough money!"));
+            return;
         }
 
-        if (!costDisabled) {
-            EconomyManager.takeMoney(player.getName(), totalPrice);
-        }
+        EconomyManager.takeMoney(player.getName(), totalPrice);
 
         ItemStack resultItem = recipe.getResultItem().copy();
         resultItem.setAmount(tradeCount * resultItem.getAmount());
@@ -225,9 +230,8 @@ public class EconomyListener implements Listener {
         player.getInventory().addItem(resultItem);
         if (!(shopkeeper instanceof AdminShopkeeper)) {
             PlayerShopkeeper playerShopkeeper = (PlayerShopkeeper) shopkeeper;
-            Container container = playerShopkeeper.getContainer().getState() instanceof Container cont ? cont : null;
-            if (container != null) {
-                Inventory inv = container.getInventory();
+            if (playerShopkeeper.getContainer().getState() instanceof Container cont) {
+                Inventory inv = cont.getInventory();
                 inv.removeItem(resultItem);
             }
             depositToShopOwner(shopkeeper, totalPrice);
@@ -237,6 +241,13 @@ public class EconomyListener implements Listener {
         sendPlayerMessage(player, config.getString("messages.buySuccess", "§aYou have purchased %item% for %price%.")
                 .replace("%item%", getItemDisplayNameSafe(recipe.getResultItem()))
                 .replace("%price%", formatPrice(totalPrice)));
+
+        // Post-Trade UI Update for bulk trade
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (ShopkeepersAPI.getUIRegistry().getUISession(player) != null) {
+                updateTradeSlotsPostTrade(player, recipe, shopkeeper);
+            }
+        }, 1L);
     }
 
     private void depositToShopOwner(Shopkeeper shopkeeper, double price) {
@@ -379,42 +390,32 @@ public class EconomyListener implements Listener {
 
     private void handleAdminTrade(InventoryClickEvent event, MerchantRecipe recipe, Player player, int maxTrades,
             double totalPrice) {
-        boolean payoutDisabled = EconomyManager.isSellFree();
-        
-        if (!payoutDisabled) {
-             EconomyManager.giveMoney(player.getName(), totalPrice);
-        }
+        EconomyManager.giveMoney(player.getName(), totalPrice);
         removeIngredients(event.getClickedInventory(), recipe, maxTrades);
     }
 
     private void handlePlayerShopTrade(InventoryClickEvent event, MerchantRecipe recipe, Player player,
             Shopkeeper shopkeeper, int maxTrades, double totalPrice) {
-        boolean ownerBalanceCheckRequired = EconomyManager.isOwnerBalanceCheckRequired();
-        boolean payoutDisabled = EconomyManager.isSellFree();
         
-        if (ownerBalanceCheckRequired && !payoutDisabled) {
-            double ownerMoney = getOwnerMoney(shopkeeper);
-            if (ownerMoney < totalPrice) {
-                sendPlayerMessage(player,
-                        config.getString("messages.noMoneyOwner", "The shop owner doesn't have enough money!"));
-                event.setCancelled(true);
-                return;
-            }
+        double ownerMoney = getOwnerMoney(shopkeeper);
+        if (ownerMoney < totalPrice) {
+            sendPlayerMessage(player,
+                    config.getString("messages.noMoneyOwner", "The shop owner doesn't have enough money!"));
+            event.setCancelled(true);
+            return;
         }
 
         // Transfer money
-        if (!payoutDisabled) {
-            String ownerUUID = getShopkeeperOwnerUUID(shopkeeper);
-            if (ownerUUID != null) {
-                String ownerName = Bukkit.getOfflinePlayer(java.util.UUID.fromString(ownerUUID)).getName();
-                if (ownerName != null) {
-                    EconomyManager.takeMoney(ownerName, totalPrice);
-                    EconomyManager.giveMoney(player.getName(), totalPrice);
-                } else {
-                        debugLog("Could not determine owner name for UUID: " + ownerUUID);
-                        sendPlayerMessage(player, config.getString("messages.error", "&cAn error occurred while processing the transaction."));
-                        return;
-                }
+        String ownerUUID = getShopkeeperOwnerUUID(shopkeeper);
+        if (ownerUUID != null) {
+            String ownerName = Bukkit.getOfflinePlayer(java.util.UUID.fromString(ownerUUID)).getName();
+            if (ownerName != null) {
+                EconomyManager.takeMoney(ownerName, totalPrice);
+                EconomyManager.giveMoney(player.getName(), totalPrice);
+            } else {
+                    debugLog("Could not determine owner name for UUID: " + ownerUUID);
+                    sendPlayerMessage(player, config.getString("messages.error", "&cAn error occurred while processing the transaction."));
+                    return;
             }
         }
 
